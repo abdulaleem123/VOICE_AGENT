@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #070b12;
+  --bg-2: #0c1320;
+  --card: rgba(16, 24, 40, 0.78);
+  --line: rgba(148, 176, 212, 0.14);
+  --text: #e8eef7;
+  --muted: #8b9bb4;
+  --accent: #2ee6c8;
+  --accent-2: #7c8cff;
+  --warn: #f5b942;
+  --danger: #ff6b7a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "IBM Plex Sans", "Geist", system-ui, sans-serif;
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(46, 230, 200, 0.12), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(124, 140, 255, 0.14), transparent 50%),
+    linear-gradient(180deg, #070b12 0%, #080d16 100%);
+}
+
+a { color: inherit; text-decoration: none; }
+button, input, textarea, select { font: inherit; }
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.orb {
+  animation: pulse 2.8s ease-in-out infinite;
+}
+
+.orb.talking {
+  animation: talk 0.9s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 230, 200, 0.35); }
+  50% { transform: scale(1.03); box-shadow: 0 0 40px 8px rgba(46, 230, 200, 0.12); }
+}
+
+@keyframes talk {
+  0%, 100% { transform: scale(1); filter: saturate(1); }
+  50% { transform: scale(1.06); filter: saturate(1.2); }
+}
+
+.scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: rgba(148, 176, 212, 0.22);
+  border-radius: 99px;
+}
+
+input, textarea, select {
+  background: rgba(7, 11, 18, 0.65);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: rgba(46, 230, 200, 0.55);
+  box-shadow: 0 0 0 3px rgba(46, 230, 200, 0.12);
+}
+
+label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }

@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+}
+
+model AgentConfig {
+  id                  String   @id @default("default")
+  name                String
+  tone                String
+  description         String
+  targetTitles        String
+  qualificationRounds Int      @default(3)
+  collectName         Boolean  @default(true)
+  collectCompany      Boolean  @default(true)
+  collectEmail        Boolean  @default(true)
+  emailRequiredOnChat Boolean  @default(false)
+  voiceId             String   @default("nova")
+  greeting            String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model HandoffRule {
+  id          String  @id @default(cuid())
+  name        String
+  triggers    String
+  action      String
+  transferTo  String?
+  enabled     Boolean @default(true)
+  description String
+  sortOrder   Int     @default(0)
+}
+
+model KnowledgeDoc {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String
+  content   String
+  chunks    String
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id         String    @id @default(cuid())
+  channel    String    @default("chat")
+  status     String    @default("active")
+  leadId     String?
+  lead       Lead?     @relation(fields: [leadId], references: [id])
+  messages   Message[]
+  handoffs   Handoff[]
+  summary    String?
+  tokensUsed Int       @default(0)
+  costUsd    Float     @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  createdAt      DateTime     @default(now())
+}
+
+model Lead {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String?
+  company       String?
+  title         String?
+  persona       String?
+  phone         String?
+  status        String         @default("new")
+  notes         String?
+  source        String         @default("chat")
+  askCount      Int            @default(0)
+  conversations Conversation[]
+  meetings      Meeting[]
+  handoffs      Handoff[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Handoff {
+  id             String        @id @default(cuid())
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  leadId         String?
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  reason         String
+  details        String
+  status         String        @default("pending")
+  transferTo     String?
+  createdAt      DateTime      @default(now())
+}
+
+model Meeting {
+  id          String   @id @default(cuid())
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id])
+  title       String
+  reason      String
+  scheduledAt DateTime
+  durationMin Int      @default(30)
+  status      String   @default("scheduled")
+  notes       String?
+  meetLink    String?
+  createdAt   DateTime @default(now())
+}
+
+model UsageLog {
+  id             String   @id @default(cuid())
+  type           String
+  model          String
+  tokensIn       Int      @default(0)
+  tokensOut      Int      @default(0)
+  characters     Int      @default(0)
+  costUsd        Float
+  conversationId String?
+  createdAt      DateTime @default(now())
+}
+
+model CallLog {
+  id        String   @id @default(cuid())
+  direction String
+  status    String   @default("completed")
+  duration  Int      @default(0)
+  leadId    String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
