@@ -105,7 +105,7 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId, text: trimmed }),
       });
-      let data: { error?: string; conversation?: Conv; reply?: string; voiceId?: string } = {};
+      let data: { error?: string; conversation?: Conv; reply?: string; voiceId?: string; closed?: boolean } = {};
       try {
         data = await res.json();
       } catch {
@@ -153,6 +153,7 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
 
   const voice = getVoice(voiceId);
   const speaking = mode === "talking" || ttsLoading;
+  const chatClosed = conv?.status === "ended";
 
   return (
     <div className="grid lg:grid-cols-[280px_1fr] gap-5 h-[calc(100vh-8rem)]">
@@ -203,6 +204,11 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
       </aside>
 
       <section className="glass rounded-3xl flex flex-col min-h-0">
+        {chatClosed ? (
+          <div className="px-5 py-3 border-b border-[#ff6b7a]/30 bg-[#ff6b7a]/10 text-sm text-[#ff9aa8]">
+            This chat was closed due to off-topic or policy requests. Start a new conversation to continue.
+          </div>
+        ) : null}
         <div className="flex-1 overflow-y-auto scroll-thin p-5 space-y-3">
           {conv?.messages.map((m) => (
             <div key={m.id} className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${m.role === "user" ? "ml-auto bg-[#2ee6c8]/15" : "bg-white/6"}`}>
@@ -228,8 +234,13 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
           >
             {mode === "listening" || speaking ? <Square size={16} /> : <Mic size={16} />}
           </button>
-          <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a reply, or use the mic…" />
-          <button type="submit" disabled={busy} className="h-11 px-4 rounded-xl bg-[#2ee6c8] text-[#06211c] disabled:opacity-50">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={chatClosed ? "Chat closed" : "Type a reply, or use the mic…"}
+            disabled={chatClosed}
+          />
+          <button type="submit" disabled={busy || chatClosed} className="h-11 px-4 rounded-xl bg-[#2ee6c8] text-[#06211c] disabled:opacity-50">
             <Send size={16} />
           </button>
         </form>

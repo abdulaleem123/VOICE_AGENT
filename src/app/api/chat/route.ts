@@ -17,6 +17,6 @@ export async function POST(req: Request) {
     const result = await runAgentTurn({ conversationId: id, userText: text });
     return NextResponse.json(result);
   } catch {
-    return NextResponse.json({ error: "Agent failed. Check OPENAI_API_KEY." }, { status: 500 });
+    return NextResponse.json({ error: "Agent is temporarily unavailable. Please try again." }, { status: 500 });
   }
 }

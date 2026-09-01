@@ -55,10 +55,11 @@ model KnowledgeDoc {
 }
 
 model Conversation {
-  id         String    @id @default(cuid())
-  channel    String    @default("chat")
-  status     String    @default("active")
-  leadId     String?
+  id              String    @id @default(cuid())
+  channel         String    @default("chat")
+  status          String    @default("active")
+  offTopicStrikes Int       @default(0)
+  leadId          String?
   lead       Lead?     @relation(fields: [leadId], references: [id])
   messages   Message[]
   handoffs   Handoff[]
