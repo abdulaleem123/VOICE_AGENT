@@ -27,7 +27,7 @@ export async function PUT(req: Request) {
     .slice(0, 20);
 
   const rounds = Math.min(3, Math.max(1, Number(body.qualificationRounds || 3) || 3));
-  const voiceId = VOICE_IDS.has(String(body.voiceId)) ? String(body.voiceId) : "nova";
+  const voiceId = VOICE_IDS.has(String(body.voiceId)) ? String(body.voiceId) : "shimmer";
   const tone = TONES.has(String(body.tone)) ? String(body.tone) : "professional";
 
   const agent = await prisma.agentConfig.upsert({

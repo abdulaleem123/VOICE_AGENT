@@ -1,0 +1,82 @@
+VOICE AGENT PRO — PRODUCT KNOWLEDGE BASE
+=========================================
+
+COMPANY
+-------
+Voice Agent Pro helps B2B teams qualify inbound and outbound conversations, capture leads,
+and book meetings with decision-makers (CEO, CFO, CTO, VP Sales, Founders).
+
+PRODUCT OVERVIEW
+----------------
+- AI voice and chat agent trained on your documents (PDF, DOC, TXT)
+- Qualifies visitors by name, company, and job title
+- Classifies personas (CEO, CFO, CTO, etc.)
+- Hands off pricing and NDA conversations to humans
+- Books discovery, demo, and pricing meetings automatically
+- Single-tenant: one company, one agent, one knowledge base
+
+KEY FEATURES
+------------
+1. Agent configuration — name, tone, greeting, target titles, qualification rounds
+2. Knowledge base — upload product docs; agent answers from your content only
+3. Live conversation — typed chat, microphone (speech-to-text), spoken replies (text-to-speech)
+4. Leads pipeline — captures contact details and persona classification
+5. Handoff rules — pricing, NDA, meeting requests, human transfer
+6. Meeting scheduler — books follow-up calls instead of quoting live on the call
+7. Admin console — health checks, OpenAI cost tracking, inbound/outbound call totals
+
+WHO IT IS FOR
+-------------
+- SaaS companies with inbound demo requests
+- Sales teams doing outbound to executives
+- Agencies qualifying CFO/CTO/CEO leads before a live call
+
+INTEGRATIONS
+------------
+- OpenAI API for chat (GPT), embeddings, Whisper speech-to-text, and TTS voices
+- Works in the browser today; phone numbers (Twilio) can be added later
+
+PRICING (DO NOT QUOTE EXACT PRICES ON LIVE CALLS)
+--------------------------------------------------
+Pricing depends on team size, call volume, and features.
+Plans typically start around $500/month for small teams.
+Enterprise pricing is custom and requires a discovery call.
+Always offer to book a pricing meeting rather than listing full price lists.
+
+NDA & LEGAL
+-------------
+We can provide a standard mutual NDA before sharing detailed product architecture
+or customer references. Legal review usually takes 2–3 business days.
+For NDA requests, collect the visitor's name, company, and email, then schedule
+an NDA review call with our sales or legal team.
+
+MEETING TYPES
+-------------
+- Discovery call (30 min) — learn about their use case
+- Product demo (45 min) — live walkthrough
+- Pricing call (30 min) — custom quote discussion
+- NDA review (20 min) — paperwork and next steps
+
+COMMON QUESTIONS
+----------------
+Q: Does it replace my sales team?
+A: No. It qualifies and books meetings; humans close deals.
+
+Q: Can it use our own documents?
+A: Yes. Upload PDF, Word, or text files to the knowledge base.
+
+Q: Is it multi-tenant?
+A: No. This deployment is single-tenant — one company per instance.
+
+Q: What voices are available?
+A: Multiple OpenAI voices including Nova, Shimmer, Echo, Onyx, and others.
+
+SUPPORT
+-------
+Email: support@voiceagent.local
+Hours: Monday–Friday, 9am–6pm UTC
+
+CONTACT FOR SALES
+-----------------
+Book a meeting through the agent or email sales@voiceagent.local.
+Do not share internal discount codes or unpublished pricing in chat.

@@ -43,9 +43,9 @@ async function main() {
       collectCompany: true,
       collectEmail: true,
       emailRequiredOnChat: false,
-      voiceId: "nova",
+      voiceId: "shimmer",
       greeting:
-        "Hi, this is Aria. Thanks for connecting — I'd love to learn who I'm speaking with and how we can help.",
+        "Hey there — I'm Aria! Great to connect. Who am I chatting with today, and what brought you here?",
     },
   });
 

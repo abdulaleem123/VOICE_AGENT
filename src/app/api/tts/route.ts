@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ttsCost } from "@/lib/costs";
 import { getVoice, VOICES } from "@/lib/voices";
 import { clip, requireApi } from "@/lib/guard";
+import { speechSnippet, TTS_INSTRUCTIONS, ttsSpeed, ttsUsesInstructions } from "@/lib/tts";
 
 const VOICE_IDS = new Set(VOICES.map((v) => v.id));
 
@@ -11,25 +12,32 @@ export async function POST(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
   const body = await req.json().catch(() => ({}));
-  const text = clip(body.text, 4000);
-  const voiceId = VOICE_IDS.has(String(body.voiceId)) ? String(body.voiceId) : "nova";
-  if (!text) return NextResponse.json({ error: "No text" }, { status: 400 });
+  const raw = clip(body.text, 4000);
+  const voiceId = VOICE_IDS.has(String(body.voiceId)) ? String(body.voiceId) : "shimmer";
+  if (!raw) return NextResponse.json({ error: "No text" }, { status: 400 });
 
+  const text = speechSnippet(raw);
   const voice = getVoice(voiceId);
+  const model = ttsModel();
+  const speed = ttsSpeed();
+
   let audio;
   try {
     audio = await openai().audio.speech.create({
-      model: ttsModel(),
+      model,
       voice: voice.id as "alloy",
       input: text,
       response_format: "mp3",
+      speed,
+      ...(ttsUsesInstructions(model) ? { instructions: TTS_INSTRUCTIONS } : {}),
     });
   } catch {
     audio = await openai().audio.speech.create({
-      model: "tts-1-hd",
-      voice: (voice.gender === "male" ? "onyx" : "nova") as "nova",
+      model: "tts-1",
+      voice: voice.id as "alloy",
       input: text,
       response_format: "mp3",
+      speed: Math.min(speed + 0.04, 1.25),
     });
   }
 
@@ -37,7 +45,7 @@ export async function POST(req: Request) {
   await prisma.usageLog.create({
     data: {
       type: "tts",
-      model: ttsModel(),
+      model,
       characters: text.length,
       costUsd: ttsCost(text.length),
     },

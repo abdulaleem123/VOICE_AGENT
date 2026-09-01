@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getVoice } from "@/lib/voices";
-import { Mic, Send, Square } from "lucide-react";
+import { Mic, Send, Square, VolumeX } from "lucide-react";
 
 type Msg = { id: string; role: string; content: string };
 type Conv = {
@@ -16,70 +16,114 @@ type Conv = {
 
 export function ChatPane({ conversationId }: { conversationId: string }) {
   const [conv, setConv] = useState<Conv | null>(null);
-  const [voiceId, setVoiceId] = useState("nova");
+  const [voiceId, setVoiceId] = useState("shimmer");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"idle" | "listening" | "talking">("idle");
   const [speak, setSpeak] = useState(true);
+  const [ttsLoading, setTtsLoading] = useState(false);
+  const [error, setError] = useState("");
   const recRef = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const ttsAbortRef = useRef<AbortController | null>(null);
   const bottom = useRef<HTMLDivElement | null>(null);
+
+  function stopSpeaking() {
+    ttsAbortRef.current?.abort();
+    ttsAbortRef.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setTtsLoading(false);
+    setMode("idle");
+  }
 
   async function load() {
     const res = await fetch(`/api/conversations/${conversationId}`);
     const data = await res.json();
     setConv(data.conversation);
-    setVoiceId(data.voiceId || "nova");
+    setVoiceId(data.voiceId || "shimmer");
   }
 
   useEffect(() => {
     load();
+    return () => stopSpeaking();
   }, [conversationId]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conv?.messages.length]);
+  }, [conv?.messages.length, busy]);
 
   async function playTTS(reply: string, vid: string) {
-    if (!speak) return;
-    setMode("talking");
-    const res = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: reply, voiceId: vid }),
-    });
-    if (!res.ok) {
-      setMode("idle");
-      return;
+    if (!speak || !reply.trim()) return;
+    stopSpeaking();
+    setTtsLoading(true);
+    const ac = new AbortController();
+    ttsAbortRef.current = ac;
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: reply, voiceId: vid }),
+        signal: ac.signal,
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      if (ac.signal.aborted) return;
+      const url = URL.createObjectURL(blob);
+      audioUrlRef.current = url;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => stopSpeaking();
+      setTtsLoading(false);
+      setMode("talking");
+      await audio.play().catch(() => stopSpeaking());
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      stopSpeaking();
     }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.onended = () => setMode("idle");
-    await audio.play().catch(() => setMode("idle"));
   }
 
   async function send(message: string) {
     const trimmed = message.trim();
     if (!trimmed || busy) return;
+    stopSpeaking();
     setText("");
     setBusy(true);
-    const res = await fetch(`/api/conversations/${conversationId}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: trimmed }),
-    });
-    const data = await res.json();
-    setBusy(false);
-    if (!res.ok) {
-      alert(data.error || "Chat failed — check OPENAI_API_KEY in .env");
-      return;
+    setError("");
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId, text: trimmed }),
+      });
+      let data: { error?: string; conversation?: Conv; reply?: string; voiceId?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Server error — refresh and try again.");
+      }
+      if (!res.ok) {
+        throw new Error(data.error || "Chat failed — check OPENAI_API_KEY in .env");
+      }
+      if (data.conversation) setConv(data.conversation);
+      const vid = data.voiceId || voiceId;
+      if (data.voiceId) setVoiceId(data.voiceId);
+      void playTTS(data.reply || "", vid);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+      setText(trimmed);
+    } finally {
+      setBusy(false);
     }
-    setConv(data.conversation);
-    setVoiceId(data.voiceId || voiceId);
-    await playTTS(data.reply, data.voiceId || voiceId);
   }
 
   async function toggleMic() {
@@ -87,6 +131,7 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
       recRef.current.stop();
       return;
     }
+    stopSpeaking();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const rec = new MediaRecorder(stream);
     chunks.current = [];
@@ -107,6 +152,7 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
   }
 
   const voice = getVoice(voiceId);
+  const speaking = mode === "talking" || ttsLoading;
 
   return (
     <div className="grid lg:grid-cols-[280px_1fr] gap-5 h-[calc(100vh-8rem)]">
@@ -118,8 +164,18 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
         <p className="mt-4 font-semibold">{voice.name}</p>
         <p className="text-xs text-[var(--muted)] capitalize">{voice.gender} · {voice.tagline}</p>
         <p className="text-xs mt-3 text-[var(--accent)]">
-          {mode === "listening" ? "Listening…" : mode === "talking" ? "Speaking…" : "Ready"}
+          {ttsLoading ? "Preparing voice…" : mode === "listening" ? "Listening…" : mode === "talking" ? "Speaking…" : "Ready"}
         </p>
+        {speaking ? (
+          <button
+            type="button"
+            onClick={stopSpeaking}
+            className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#ff6b7a]/20 text-[#ff6b7a] text-sm font-medium"
+          >
+            <VolumeX size={16} />
+            Stop speaking
+          </button>
+        ) : null}
         <div className="mt-6 w-full text-left space-y-2 text-sm">
           <p><span className="text-[var(--muted)]">Lead</span> · {conv?.lead?.name || "—"}</p>
           <p><span className="text-[var(--muted)]">Company</span> · {conv?.lead?.company || "—"}</p>
@@ -129,10 +185,21 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
             <p className="text-[#f5b942]">Handoff · {conv.handoffs[0].reason}</p>
           ) : null}
         </div>
-        <label className="mt-auto flex items-center gap-2 text-sm normal-case tracking-normal text-white">
-          <input type="checkbox" className="w-auto" checked={speak} onChange={(e) => setSpeak(e.target.checked)} />
-          Speak replies
-        </label>
+        <div className="mt-auto w-full space-y-2">
+          <label className="flex items-center gap-2 text-sm normal-case tracking-normal text-white">
+            <input
+              type="checkbox"
+              className="w-auto"
+              checked={speak}
+              onChange={(e) => {
+                setSpeak(e.target.checked);
+                if (!e.target.checked) stopSpeaking();
+              }}
+            />
+            Speak replies
+          </label>
+          <p className="text-[10px] text-[var(--muted)] text-left">Uncheck before chatting to stay silent.</p>
+        </div>
       </aside>
 
       <section className="glass rounded-3xl flex flex-col min-h-0">
@@ -143,6 +210,7 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
             </div>
           ))}
           {busy ? <p className="text-xs text-[var(--muted)]">Thinking…</p> : null}
+          {error ? <p className="text-xs text-[#ff6b7a]">{error}</p> : null}
           <div ref={bottom} />
         </div>
         <form
@@ -152,11 +220,16 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
             send(text);
           }}
         >
-          <button type="button" onClick={toggleMic} className={`h-11 w-11 rounded-xl grid place-items-center ${mode === "listening" ? "bg-[#ff6b7a] text-white" : "bg-white/8"}`}>
-            {mode === "listening" ? <Square size={16} /> : <Mic size={16} />}
+          <button
+            type="button"
+            onClick={speaking ? stopSpeaking : toggleMic}
+            className={`h-11 w-11 rounded-xl grid place-items-center ${mode === "listening" ? "bg-[#ff6b7a] text-white" : speaking ? "bg-[#ff6b7a]/80 text-white" : "bg-white/8"}`}
+            title={speaking ? "Stop speaking" : "Use microphone"}
+          >
+            {mode === "listening" || speaking ? <Square size={16} /> : <Mic size={16} />}
           </button>
           <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a reply, or use the mic…" />
-          <button type="submit" className="h-11 px-4 rounded-xl bg-[#2ee6c8] text-[#06211c]">
+          <button type="submit" disabled={busy} className="h-11 px-4 rounded-xl bg-[#2ee6c8] text-[#06211c] disabled:opacity-50">
             <Send size={16} />
           </button>
         </form>
