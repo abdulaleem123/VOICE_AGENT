@@ -29,6 +29,17 @@ export async function PUT(req: Request) {
   const rounds = Math.min(3, Math.max(1, Number(body.qualificationRounds || 3) || 3));
   const voiceId = VOICE_IDS.has(String(body.voiceId)) ? String(body.voiceId) : "shimmer";
   const tone = TONES.has(String(body.tone)) ? String(body.tone) : "professional";
+  const vadSilenceMs = Math.min(800, Math.max(150, Number(body.vadSilenceMs || 300) || 300));
+
+  const voiceFields = {
+    shortReplies: body.shortReplies !== false,
+    humanizedTone: body.humanizedTone !== false,
+    interruptionEnabled: body.interruptionEnabled !== false,
+    autoPauseEnabled: body.autoPauseEnabled !== false,
+    noiseCancelEnabled: body.noiseCancelEnabled !== false,
+    lowLatencyMode: body.lowLatencyMode !== false,
+    vadSilenceMs,
+  };
 
   const agent = await prisma.agentConfig.upsert({
     where: { id: "default" },
@@ -44,6 +55,7 @@ export async function PUT(req: Request) {
       emailRequiredOnChat: Boolean(body.emailRequiredOnChat),
       voiceId,
       greeting: clip(body.greeting, 500),
+      ...voiceFields,
     },
     create: {
       id: "default",
@@ -58,6 +70,7 @@ export async function PUT(req: Request) {
       emailRequiredOnChat: Boolean(body.emailRequiredOnChat),
       voiceId,
       greeting: clip(body.greeting, 500),
+      ...voiceFields,
     },
   });
 

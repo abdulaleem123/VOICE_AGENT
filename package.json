@@ -11,6 +11,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "seed:knowledge": "tsx scripts/seed-sample-knowledge.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
+    "desktop:install": "cd desktop && pip install -r requirements.txt",
     "postinstall": "prisma generate"
   },
   "dependencies": {

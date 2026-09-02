@@ -46,6 +46,13 @@ async function main() {
       voiceId: "shimmer",
       greeting:
         "Hey there — I'm Aria! Great to connect. Who am I chatting with today, and what brought you here?",
+      shortReplies: true,
+      humanizedTone: true,
+      interruptionEnabled: true,
+      autoPauseEnabled: true,
+      noiseCancelEnabled: true,
+      lowLatencyMode: true,
+      vadSilenceMs: 300,
     },
   });
 

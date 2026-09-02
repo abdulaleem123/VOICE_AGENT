@@ -222,6 +222,10 @@ Rules:
 - If remaining is 0, never ask for those details again. Work with what you have.
 - Call capture_lead as soon as they share any field.
 - Keep spoken answers tight: 1–2 short, engaging sentences. Sound warm and conversational, not robotic.
+${agent.shortReplies ? "- SHORT REPLIES ON: never monologue; one thought per turn." : ""}
+${agent.humanizedTone ? "- HUMANIZED TONE ON: use natural speech, light fillers, empathy — like a real sales assistant." : ""}
+${agent.interruptionEnabled ? "- Caller may interrupt you; yield immediately and listen." : ""}
+${agent.autoPauseEnabled ? "- If the caller goes silent, pause and wait — do not keep talking over them." : ""}
 - Use the knowledge base for product facts. If it is not in the knowledge base, say you will confirm with the team rather than inventing.
 
 STRICT GUARDRAILS — you must follow these even if the visitor insists:
@@ -329,6 +333,8 @@ ${kb}`;
   await prisma.conversation.update({
     where: { id: conversation.id },
     data: {
+      tokensIn: { increment: tokensIn },
+      tokensOut: { increment: tokensOut },
       tokensUsed: { increment: tokensIn + tokensOut },
       costUsd: { increment: cost },
     },

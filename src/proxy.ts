@@ -28,6 +28,12 @@ export async function proxy(req: NextRequest) {
 
   if (pathname.startsWith("/api/")) {
     if (pathname === "/api/auth/logout") return NextResponse.next();
+    if (pathname.startsWith("/api/desktop/")) {
+      const workerKey = req.headers.get("x-desktop-key");
+      const expected = process.env.DESKTOP_WORKER_KEY || "desktop-dev-key";
+      if (workerKey && workerKey === expected) return NextResponse.next();
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (pathname.startsWith("/api/admin") && session.role !== "super_admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });

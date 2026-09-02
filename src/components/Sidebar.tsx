@@ -9,6 +9,8 @@ import {
   Handshake,
   LayoutDashboard,
   MessageSquare,
+  PhoneCall,
+  Plug,
   Settings,
   Sparkles,
   Users,
@@ -19,9 +21,11 @@ const links = [
   { href: "/agent", label: "Agent", icon: Sparkles },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
   { href: "/conversations", label: "Conversation", icon: MessageSquare },
+  { href: "/calls", label: "Calls", icon: PhoneCall },
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/handoff", label: "Handoff", icon: Handshake },
   { href: "/meetings", label: "Meeting", icon: Calendar },
+  { href: "/integrations", label: "Integrations", icon: Plug },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

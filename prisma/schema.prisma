@@ -27,8 +27,15 @@ model AgentConfig {
   collectCompany      Boolean  @default(true)
   collectEmail        Boolean  @default(true)
   emailRequiredOnChat Boolean  @default(false)
-  voiceId             String   @default("nova")
+  voiceId             String   @default("shimmer")
   greeting            String
+  shortReplies        Boolean  @default(true)
+  humanizedTone       Boolean  @default(true)
+  interruptionEnabled Boolean  @default(true)
+  autoPauseEnabled    Boolean  @default(true)
+  noiseCancelEnabled  Boolean  @default(true)
+  lowLatencyMode      Boolean  @default(true)
+  vadSilenceMs        Int      @default(300)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
@@ -60,14 +67,18 @@ model Conversation {
   status          String    @default("active")
   offTopicStrikes Int       @default(0)
   leadId          String?
-  lead       Lead?     @relation(fields: [leadId], references: [id])
-  messages   Message[]
-  handoffs   Handoff[]
-  summary    String?
-  tokensUsed Int       @default(0)
-  costUsd    Float     @default(0)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  lead            Lead?     @relation(fields: [leadId], references: [id])
+  messages        Message[]
+  handoffs        Handoff[]
+  callLogs        CallLog[]
+  sessions        VoiceSession[]
+  summary         String?
+  tokensIn        Int       @default(0)
+  tokensOut       Int       @default(0)
+  tokensUsed      Int       @default(0)
+  costUsd         Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Message {
@@ -94,6 +105,7 @@ model Lead {
   conversations Conversation[]
   meetings      Meeting[]
   handoffs      Handoff[]
+  callLogs      CallLog[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -138,13 +150,42 @@ model UsageLog {
 }
 
 model CallLog {
-  id        String   @id @default(cuid())
-  direction String
-  status    String   @default("completed")
-  duration  Int      @default(0)
-  leadId    String?
-  notes     String?
-  createdAt DateTime @default(now())
+  id             String        @id @default(cuid())
+  direction      String
+  status         String        @default("ringing")
+  outcome        String        @default("unknown")
+  duration       Int           @default(0)
+  phoneNumber    String?
+  contactName    String?
+  roomName       String?
+  leadId         String?
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  tokensIn       Int           @default(0)
+  tokensOut      Int           @default(0)
+  costUsd        Float         @default(0)
+  notes          String?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime      @default(now())
+}
+
+model VoiceSession {
+  id             String        @id @default(cuid())
+  mode           String        @default("desktop")
+  status         String        @default("active")
+  roomName       String?
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  interruption   Boolean       @default(true)
+  noiseCancel    Boolean       @default(true)
+  autoPause      Boolean       @default(true)
+  lowLatency     Boolean       @default(true)
+  tokensIn       Int           @default(0)
+  tokensOut      Int           @default(0)
+  createdAt      DateTime      @default(now())
+  endedAt        DateTime?
 }
 
 model Setting {

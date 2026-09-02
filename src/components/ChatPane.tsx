@@ -23,6 +23,12 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
   const [speak, setSpeak] = useState(true);
   const [ttsLoading, setTtsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [voiceQuality, setVoiceQuality] = useState({
+    interruptionEnabled: true,
+    autoPauseEnabled: true,
+    noiseCancelEnabled: true,
+    lowLatencyMode: true,
+  });
   const recRef = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -55,6 +61,17 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
 
   useEffect(() => {
     load();
+    fetch("/api/agent")
+      .then((r) => r.json())
+      .then((d) =>
+        setVoiceQuality({
+          interruptionEnabled: d.interruptionEnabled !== false,
+          autoPauseEnabled: d.autoPauseEnabled !== false,
+          noiseCancelEnabled: d.noiseCancelEnabled !== false,
+          lowLatencyMode: d.lowLatencyMode !== false,
+        }),
+      )
+      .catch(() => undefined);
     return () => stopSpeaking();
   }, [conversationId]);
 
@@ -131,8 +148,17 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
       recRef.current.stop();
       return;
     }
-    stopSpeaking();
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Barge-in / interruption: stop agent speech when user starts talking
+    if ((mode === "talking" || ttsLoading) && voiceQuality.interruptionEnabled) {
+      stopSpeaking();
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: voiceQuality.noiseCancelEnabled,
+        autoGainControl: true,
+      },
+    });
     const rec = new MediaRecorder(stream);
     chunks.current = [];
     rec.ondataavailable = (e) => e.data.size && chunks.current.push(e.data);
@@ -140,6 +166,10 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
       stream.getTracks().forEach((t) => t.stop());
       setMode("idle");
       const blob = new Blob(chunks.current, { type: rec.mimeType || "audio/webm" });
+      // Auto-pause: ignore empty / near-silent clips
+      if (voiceQuality.autoPauseEnabled && blob.size < 1200) {
+        return;
+      }
       const form = new FormData();
       form.append("audio", blob, "clip.webm");
       const res = await fetch("/api/stt", { method: "POST", body: form });
@@ -199,7 +229,11 @@ export function ChatPane({ conversationId }: { conversationId: string }) {
             />
             Speak replies
           </label>
-          <p className="text-[10px] text-[var(--muted)] text-left">Uncheck before chatting to stay silent.</p>
+          <p className="text-[10px] text-[var(--muted)] text-left leading-relaxed">
+            {voiceQuality.noiseCancelEnabled ? "Noise cancel on · " : ""}
+            {voiceQuality.interruptionEnabled ? "Barge-in on · " : ""}
+            {voiceQuality.lowLatencyMode ? "Low-latency profile" : "Standard latency"}
+          </p>
         </div>
       </aside>
 

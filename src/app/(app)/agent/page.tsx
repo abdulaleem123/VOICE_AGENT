@@ -16,6 +16,13 @@ type Agent = {
   emailRequiredOnChat: boolean;
   voiceId: string;
   greeting: string;
+  shortReplies: boolean;
+  humanizedTone: boolean;
+  interruptionEnabled: boolean;
+  autoPauseEnabled: boolean;
+  noiseCancelEnabled: boolean;
+  lowLatencyMode: boolean;
+  vadSilenceMs: number;
 };
 
 const empty: Agent = {
@@ -28,8 +35,15 @@ const empty: Agent = {
   collectCompany: true,
   collectEmail: true,
   emailRequiredOnChat: false,
-  voiceId: "nova",
+  voiceId: "shimmer",
   greeting: "",
+  shortReplies: true,
+  humanizedTone: true,
+  interruptionEnabled: true,
+  autoPauseEnabled: true,
+  noiseCancelEnabled: true,
+  lowLatencyMode: true,
+  vadSilenceMs: 300,
 };
 
 export default function AgentPage() {
@@ -173,6 +187,47 @@ export default function AgentPage() {
               {label}
             </label>
           ))}
+        </div>
+      </section>
+
+      <section className="glass rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-medium">Voice quality & desktop latency</h2>
+          <p className="text-sm text-[var(--muted)]">
+            Short humanized replies, barge-in, auto-pause, noise cancel — used by chat and the LiveKit desktop worker.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {(
+            [
+              ["shortReplies", "Short replies (1–2 sentences)"],
+              ["humanizedTone", "Humanized tone"],
+              ["interruptionEnabled", "Interruption / barge-in"],
+              ["autoPauseEnabled", "Auto-pause on silence"],
+              ["noiseCancelEnabled", "Noise cancellation"],
+              ["lowLatencyMode", "Low-latency desktop mode"],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-3 normal-case tracking-normal text-sm text-white !mt-0">
+              <input
+                type="checkbox"
+                className="w-auto"
+                checked={Boolean(agent[key])}
+                onChange={(e) => setAgent({ ...agent, [key]: e.target.checked })}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        <div className="max-w-xs">
+          <label>VAD silence (ms)</label>
+          <input
+            type="number"
+            min={150}
+            max={800}
+            value={agent.vadSilenceMs}
+            onChange={(e) => setAgent({ ...agent, vadSilenceMs: Number(e.target.value) || 300 })}
+          />
         </div>
       </section>
 
