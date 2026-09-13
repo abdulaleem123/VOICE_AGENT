@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   AudioLines,
   BookOpen,
+  Building2,
   Calendar,
   Handshake,
   LayoutDashboard,
@@ -15,9 +16,11 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { TenantSwitcher } from "@/components/TenantSwitcher";
 
 const links = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/tenants", label: "Tenants", icon: Building2 },
   { href: "/agent", label: "Agent", icon: Sparkles },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
   { href: "/conversations", label: "Conversation", icon: MessageSquare },
@@ -47,9 +50,10 @@ export function Sidebar({ name }: { name: string }) {
         </div>
         <div>
           <p className="font-semibold leading-tight">Voice Agent</p>
-          <p className="text-xs text-[var(--muted)]">Single tenant</p>
+          <p className="text-xs text-[var(--muted)]">Multi-tenant</p>
         </div>
       </div>
+      <TenantSwitcher compact />
       <nav className="mt-4 space-y-1 flex-1">
         {links.map((l) => {
           const active = path === l.href || path.startsWith(l.href + "/");

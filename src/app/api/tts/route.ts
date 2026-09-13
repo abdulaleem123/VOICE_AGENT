@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ttsCost } from "@/lib/costs";
 import { getVoice, VOICES } from "@/lib/voices";
 import { clip, requireApi } from "@/lib/guard";
+import { getActiveTenantId } from "@/lib/tenant";
 import { speechSnippet, TTS_INSTRUCTIONS, ttsSpeed, ttsUsesInstructions } from "@/lib/tts";
 
 const VOICE_IDS = new Set(VOICES.map((v) => v.id));
@@ -42,8 +43,10 @@ export async function POST(req: Request) {
   }
 
   const buf = Buffer.from(await audio.arrayBuffer());
+  const tenantId = await getActiveTenantId();
   await prisma.usageLog.create({
     data: {
+      tenantId,
       type: "tts",
       model,
       characters: text.length,

@@ -16,8 +16,34 @@ model User {
   createdAt DateTime @default(now())
 }
 
+model Tenant {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  industry    String
+  tagline     String
+  description String
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agent         AgentConfig?
+  handoffRules  HandoffRule[]
+  knowledgeDocs KnowledgeDoc[]
+  conversations Conversation[]
+  leads         Lead[]
+  meetings      Meeting[]
+  callLogs      CallLog[]
+  usageLogs     UsageLog[]
+  voiceSessions VoiceSession[]
+  handoffs      Handoff[]
+}
+
 model AgentConfig {
-  id                  String   @id @default("default")
+  id                  String   @id @default(cuid())
+  tenantId            String   @unique
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name                String
   tone                String
   description         String
@@ -42,6 +68,8 @@ model AgentConfig {
 
 model HandoffRule {
   id          String  @id @default(cuid())
+  tenantId    String
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name        String
   triggers    String
   action      String
@@ -49,20 +77,28 @@ model HandoffRule {
   enabled     Boolean @default(true)
   description String
   sortOrder   Int     @default(0)
+
+  @@index([tenantId])
 }
 
 model KnowledgeDoc {
   id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   filename  String
   mimeType  String
   content   String
   chunks    String
   size      Int
   createdAt DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model Conversation {
   id              String    @id @default(cuid())
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   channel         String    @default("chat")
   status          String    @default("active")
   offTopicStrikes Int       @default(0)
@@ -79,6 +115,8 @@ model Conversation {
   costUsd         Float     @default(0)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId])
 }
 
 model Message {
@@ -92,6 +130,8 @@ model Message {
 
 model Lead {
   id            String         @id @default(cuid())
+  tenantId      String
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name          String?
   email         String?
   company       String?
@@ -108,10 +148,14 @@ model Lead {
   callLogs      CallLog[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  @@index([tenantId])
 }
 
 model Handoff {
   id             String        @id @default(cuid())
+  tenantId       String
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   conversationId String?
   conversation   Conversation? @relation(fields: [conversationId], references: [id])
   leadId         String?
@@ -121,10 +165,14 @@ model Handoff {
   status         String        @default("pending")
   transferTo     String?
   createdAt      DateTime      @default(now())
+
+  @@index([tenantId])
 }
 
 model Meeting {
   id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   leadId      String?
   lead        Lead?    @relation(fields: [leadId], references: [id])
   title       String
@@ -135,10 +183,14 @@ model Meeting {
   notes       String?
   meetLink    String?
   createdAt   DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model UsageLog {
   id             String   @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   type           String
   model          String
   tokensIn       Int      @default(0)
@@ -147,10 +199,14 @@ model UsageLog {
   costUsd        Float
   conversationId String?
   createdAt      DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model CallLog {
   id             String        @id @default(cuid())
+  tenantId       String
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   direction      String
   status         String        @default("ringing")
   outcome        String        @default("unknown")
@@ -169,10 +225,14 @@ model CallLog {
   startedAt      DateTime?
   endedAt        DateTime?
   createdAt      DateTime      @default(now())
+
+  @@index([tenantId])
 }
 
 model VoiceSession {
   id             String        @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?       @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   mode           String        @default("desktop")
   status         String        @default("active")
   roomName       String?

@@ -34,7 +34,7 @@ function cosine(a: number[], b: number[]) {
   return d ? dot / d : 0;
 }
 
-export async function embedTexts(texts: string[]) {
+export async function embedTexts(texts: string[], tenantId?: string | null) {
   if (!texts.length) return [] as number[][];
   const res = await openai().embeddings.create({
     model: embedModel(),
@@ -47,18 +47,22 @@ export async function embedTexts(texts: string[]) {
       model: embedModel(),
       tokensIn: tokens,
       costUsd: embedCost(tokens),
+      tenantId: tenantId || null,
     },
   });
   return res.data.sort((a, b) => a.index - b.index).map((d) => d.embedding);
 }
 
-export async function retrieveKnowledge(query: string, k = 5) {
-  const docs = await prisma.knowledgeDoc.findMany({ orderBy: { createdAt: "desc" } });
+export async function retrieveKnowledge(query: string, k = 5, tenantId?: string | null) {
+  const docs = await prisma.knowledgeDoc.findMany({
+    where: tenantId ? { tenantId } : undefined,
+    orderBy: { createdAt: "desc" },
+  });
   if (!docs.length) return [] as { text: string; filename: string; score: number }[];
 
   let qEmbed: number[] | null = null;
   try {
-    qEmbed = (await embedTexts([query]))[0];
+    qEmbed = (await embedTexts([query], tenantId))[0];
   } catch {
     qEmbed = null;
   }

@@ -3,6 +3,7 @@ import mammoth from "mammoth";
 import { prisma } from "@/lib/prisma";
 import { chunkText, embedTexts, type Chunk } from "@/lib/rag";
 import { requireApi } from "@/lib/guard";
+import { getActiveTenantId } from "@/lib/tenant";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_EXT = [".pdf", ".doc", ".docx", ".txt"];
@@ -38,7 +39,10 @@ async function extractText(file: File) {
 export async function GET(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
   const docs = await prisma.knowledgeDoc.findMany({
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
     select: { id: true, filename: true, mimeType: true, size: true, createdAt: true, content: true },
   });
@@ -53,6 +57,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
 
   const form = await req.formData();
   const file = form.get("file");
@@ -79,7 +85,7 @@ export async function POST(req: Request) {
   const pieces = chunkText(text);
   let chunks: Chunk[] = pieces.map((t) => ({ text: t, embedding: [] }));
   try {
-    const embeddings = await embedTexts(pieces.length ? pieces : [text.slice(0, 8000)]);
+    const embeddings = await embedTexts(pieces.length ? pieces : [text.slice(0, 8000)], tenantId);
     chunks = (pieces.length ? pieces : [text.slice(0, 8000)]).map((t, i) => ({
       text: t,
       embedding: embeddings[i] || [],
@@ -90,6 +96,7 @@ export async function POST(req: Request) {
 
   const doc = await prisma.knowledgeDoc.create({
     data: {
+      tenantId,
       filename: safeFilename(file.name),
       mimeType: file.type || "application/octet-stream",
       content: text.slice(0, 500_000),

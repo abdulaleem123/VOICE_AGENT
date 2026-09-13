@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clip, requireApi } from "@/lib/guard";
+import { getActiveTenantId } from "@/lib/tenant";
 import { VOICES } from "@/lib/voices";
 
 const TONES = new Set(["professional", "friendly", "warm", "executive", "consultative", "direct"]);
@@ -9,7 +10,9 @@ const VOICE_IDS = new Set(VOICES.map((v) => v.id));
 export async function GET(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
-  const agent = await prisma.agentConfig.findUnique({ where: { id: "default" } });
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
+  const agent = await prisma.agentConfig.findUnique({ where: { tenantId } });
   if (!agent) return NextResponse.json({ error: "Not configured" }, { status: 404 });
   return NextResponse.json({
     ...agent,
@@ -20,6 +23,8 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const titles = (Array.isArray(body.targetTitles) ? body.targetTitles : String(body.targetTitles || "").split(","))
     .map((s: unknown) => clip(s, 40))
@@ -42,7 +47,7 @@ export async function PUT(req: Request) {
   };
 
   const agent = await prisma.agentConfig.upsert({
-    where: { id: "default" },
+    where: { tenantId },
     update: {
       name: clip(body.name, 80) || "Aria",
       tone,
@@ -58,7 +63,7 @@ export async function PUT(req: Request) {
       ...voiceFields,
     },
     create: {
-      id: "default",
+      tenantId,
       name: clip(body.name, 80) || "Aria",
       tone,
       description: clip(body.description, 2000),

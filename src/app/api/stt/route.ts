@@ -3,6 +3,7 @@ import { openai, sttModel } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { sttCost } from "@/lib/costs";
 import { requireApi } from "@/lib/guard";
+import { getActiveTenantId } from "@/lib/tenant";
 
 const MAX_AUDIO = 6 * 1024 * 1024;
 
@@ -23,8 +24,10 @@ export async function POST(req: Request) {
     model: sttModel(),
   });
 
+  const tenantId = await getActiveTenantId();
   await prisma.usageLog.create({
     data: {
+      tenantId,
       type: "stt",
       model: sttModel(),
       characters: transcript.text.length,

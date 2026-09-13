@@ -1,10 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getActiveTenantId, getTenantBySlug } from "@/lib/tenant";
 
 function authorized(req: Request) {
   const key = req.headers.get("x-desktop-key") || "";
   const expected = process.env.DESKTOP_WORKER_KEY || "desktop-dev-key";
   return key && key === expected;
+}
+
+async function resolveTenantId(body: Record<string, unknown>) {
+  if (typeof body.tenantId === "string" && body.tenantId) {
+    const t = await prisma.tenant.findFirst({ where: { id: body.tenantId, active: true } });
+    if (t) return t.id;
+  }
+  if (typeof body.tenantSlug === "string" && body.tenantSlug) {
+    const t = await getTenantBySlug(body.tenantSlug);
+    if (t?.active) return t.id;
+  }
+  return getActiveTenantId();
 }
 
 export async function POST(req: Request) {
@@ -13,17 +26,23 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
+  const tenantId = await resolveTenantId(body);
+  if (!tenantId) {
+    return NextResponse.json({ error: "No active tenant" }, { status: 400 });
+  }
+
   const type = String(body.type || "");
   const direction = body.direction === "outbound" ? "outbound" : "inbound";
   const callLogId = typeof body.callLogId === "string" ? body.callLogId : null;
 
   if (type === "call_queued" || type === "session_start") {
     if (callLogId) {
-      const existing = await prisma.callLog.findUnique({ where: { id: callLogId } });
+      const existing = await prisma.callLog.findFirst({ where: { id: callLogId, tenantId } });
       if (existing) return NextResponse.json({ ok: true, callLogId });
     }
     const created = await prisma.callLog.create({
       data: {
+        tenantId,
         direction,
         status: "ringing",
         outcome: "unknown",
@@ -37,6 +56,7 @@ export async function POST(req: Request) {
     if (body.mode === "desktop" || type === "session_start") {
       await prisma.voiceSession.create({
         data: {
+          tenantId,
           mode: "desktop",
           status: "active",
           roomName: body.roomName || null,
@@ -79,10 +99,14 @@ export async function POST(req: Request) {
   }
 
   if (callLogId && Object.keys(patch).length) {
-    await prisma.callLog.update({ where: { id: callLogId }, data: patch }).catch(async () => {
+    const existing = await prisma.callLog.findFirst({ where: { id: callLogId, tenantId } });
+    if (existing) {
+      await prisma.callLog.update({ where: { id: callLogId }, data: patch });
+    } else {
       await prisma.callLog.create({
         data: {
           id: callLogId,
+          tenantId,
           direction,
           status: String(patch.status || "ended"),
           outcome: String(patch.outcome || "unknown"),
@@ -92,10 +116,11 @@ export async function POST(req: Request) {
           roomName: body.roomName || null,
         },
       });
-    });
+    }
   } else if (!callLogId && (type === "call_answered" || type === "call_missed")) {
     await prisma.callLog.create({
       data: {
+        tenantId,
         direction,
         status: type === "call_answered" ? "in_progress" : "ended",
         outcome: type === "call_answered" ? "answered" : "missed",
@@ -110,7 +135,7 @@ export async function POST(req: Request) {
 
   if (type === "call_ended" && body.roomName) {
     await prisma.voiceSession.updateMany({
-      where: { roomName: String(body.roomName), status: "active" },
+      where: { tenantId, roomName: String(body.roomName), status: "active" },
       data: { status: "ended", endedAt: new Date() },
     });
   }

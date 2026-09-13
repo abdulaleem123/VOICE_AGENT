@@ -97,13 +97,13 @@ function classifyPersona(title: string | null | undefined, targets: string[]) {
   return hit || title;
 }
 
-async function ensureLead(conversationId: string, source: string) {
+async function ensureLead(conversationId: string, source: string, tenantId: string) {
   const convo = await prisma.conversation.findUnique({ where: { id: conversationId } });
   if (convo?.leadId) {
     return prisma.lead.findUniqueOrThrow({ where: { id: convo.leadId } });
   }
   const lead = await prisma.lead.create({
-    data: { source, status: "new" },
+    data: { source, status: "new", tenantId },
   });
   await prisma.conversation.update({
     where: { id: conversationId },
@@ -137,7 +137,7 @@ export async function runAgentTurn(opts: {
     await prisma.message.create({
       data: { conversationId: conversation.id, role: "user", content: opts.userText },
     });
-    const agentCfg = await prisma.agentConfig.findUnique({ where: { id: "default" } });
+    const agentCfg = await prisma.agentConfig.findUnique({ where: { tenantId: conversation.tenantId } });
     const agentName = agentCfg?.name || "Aria";
     const { reply, strikes, endChat } = guardrailReply(screening.verdict, conversation.offTopicStrikes, agentName);
     await prisma.message.create({
@@ -169,9 +169,9 @@ export async function runAgentTurn(opts: {
   });
 
   const [agent, rules, snippets] = await Promise.all([
-    prisma.agentConfig.findUnique({ where: { id: "default" } }),
-    prisma.handoffRule.findMany({ where: { enabled: true }, orderBy: { sortOrder: "asc" } }),
-    retrieveKnowledge(opts.userText).catch(() => []),
+    prisma.agentConfig.findUnique({ where: { tenantId: conversation.tenantId } }),
+    prisma.handoffRule.findMany({ where: { enabled: true, tenantId: conversation.tenantId }, orderBy: { sortOrder: "asc" } }),
+    retrieveKnowledge(opts.userText, 5, conversation.tenantId).catch(() => []),
   ]);
 
   if (!agent) throw new Error("Agent is not configured");
@@ -287,6 +287,7 @@ ${kb}`;
         }
         const result = await runTool(fn.name, args, {
           conversationId: conversation.id,
+          tenantId: conversation.tenantId,
           channel,
           titles,
           qualificationRounds: agent.qualificationRounds,
@@ -328,6 +329,7 @@ ${kb}`;
       tokensOut,
       costUsd: cost,
       conversationId: conversation.id,
+      tenantId: conversation.tenantId,
     },
   });
   await prisma.conversation.update({
@@ -353,13 +355,14 @@ async function runTool(
   args: Record<string, unknown>,
   ctx: {
     conversationId: string;
+    tenantId: string;
     channel: string;
     titles: string[];
     qualificationRounds: number;
     rules: { name: string; action: string; transferTo: string | null }[];
   },
 ) {
-  const lead = await ensureLead(ctx.conversationId, ctx.channel);
+  const lead = await ensureLead(ctx.conversationId, ctx.channel, ctx.tenantId);
 
   if (name === "ask_qualification") {
     if (lead.askCount >= ctx.qualificationRounds) {
@@ -402,6 +405,7 @@ async function runTool(
     const rule = ctx.rules.find((r) => r.name.toLowerCase() === reason) || ctx.rules[0];
     const handoff = await prisma.handoff.create({
       data: {
+        tenantId: ctx.tenantId,
         conversationId: ctx.conversationId,
         leadId: lead.id,
         reason,
@@ -432,6 +436,7 @@ async function runTool(
     }
     const meeting = await prisma.meeting.create({
       data: {
+        tenantId: ctx.tenantId,
         leadId: lead.id,
         title: String(args.title || "Follow-up"),
         reason: String(args.reason || "discovery"),

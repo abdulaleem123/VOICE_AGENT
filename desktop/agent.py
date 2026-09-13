@@ -47,15 +47,19 @@ logger = logging.getLogger("voice-agent.desktop")
 
 APP_API_URL = os.getenv("APP_URL", "http://localhost:4000").rstrip("/")
 DESKTOP_API_KEY = os.getenv("DESKTOP_WORKER_KEY", "desktop-dev-key")
+TENANT_SLUG = os.getenv("TENANT_SLUG", "").strip()
 
 
 async def api_post(path: str, payload: dict) -> None:
     """Best-effort sync to Next.js SaaS API."""
     try:
+        body = dict(payload)
+        if TENANT_SLUG and "tenantSlug" not in body:
+            body["tenantSlug"] = TENANT_SLUG
         async with httpx.AsyncClient(timeout=8.0) as client:
             await client.post(
                 f"{APP_API_URL}{path}",
-                json=payload,
+                json=body,
                 headers={"x-desktop-key": DESKTOP_API_KEY},
             )
     except Exception as e:
@@ -64,10 +68,14 @@ async def api_post(path: str, payload: dict) -> None:
 
 async def fetch_agent_profile() -> dict:
     try:
+        headers = {"x-desktop-key": DESKTOP_API_KEY}
+        if TENANT_SLUG:
+            headers["x-tenant-slug"] = TENANT_SLUG
+        qs = f"?tenant={TENANT_SLUG}" if TENANT_SLUG else ""
         async with httpx.AsyncClient(timeout=8.0) as client:
             res = await client.get(
-                f"{APP_API_URL}/api/desktop/profile",
-                headers={"x-desktop-key": DESKTOP_API_KEY},
+                f"{APP_API_URL}/api/desktop/profile{qs}",
+                headers=headers,
             )
             if res.status_code == 200:
                 return res.json()

@@ -8,9 +8,18 @@ const prisma = new PrismaClient();
 const FILENAME = "voice-agent-product-knowledge.txt";
 
 async function main() {
+  const tenant =
+    (await prisma.tenant.findFirst({ where: { slug: "software-house" } })) ||
+    (await prisma.tenant.findFirst({ where: { active: true }, orderBy: { sortOrder: "asc" } }));
+  if (!tenant) {
+    throw new Error("No tenant found — run npm run db:seed first");
+  }
+
   const path = resolve(process.cwd(), "samples", FILENAME);
   const content = readFileSync(path, "utf8");
-  const existing = await prisma.knowledgeDoc.findFirst({ where: { filename: FILENAME } });
+  const existing = await prisma.knowledgeDoc.findFirst({
+    where: { filename: FILENAME, tenantId: tenant.id },
+  });
   if (existing) {
     await prisma.knowledgeDoc.delete({ where: { id: existing.id } });
   }
@@ -18,7 +27,7 @@ async function main() {
   const pieces = chunkText(content);
   let chunks = pieces.map((text) => ({ text, embedding: [] as number[] }));
   try {
-    const embeddings = await embedTexts(pieces.length ? pieces : [content.slice(0, 8000)]);
+    const embeddings = await embedTexts(pieces.length ? pieces : [content.slice(0, 8000)], tenant.id);
     chunks = (pieces.length ? pieces : [content.slice(0, 8000)]).map((text, i) => ({
       text,
       embedding: embeddings[i] || [],
@@ -30,6 +39,7 @@ async function main() {
 
   await prisma.knowledgeDoc.create({
     data: {
+      tenantId: tenant.id,
       filename: FILENAME,
       mimeType: "text/plain",
       content,
@@ -38,8 +48,7 @@ async function main() {
     },
   });
 
-  console.log("Sample knowledge loaded:", FILENAME);
-  console.log("Path on disk:", path);
+  console.log("Sample knowledge loaded for tenant:", tenant.slug, "→", FILENAME);
 }
 
 main()

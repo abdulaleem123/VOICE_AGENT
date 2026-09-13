@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApi } from "@/lib/guard";
+import { getActiveTenantId } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
   const since = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30);
 
   const [
@@ -20,24 +23,25 @@ export async function GET(req: Request) {
     recent,
     sessions,
   ] = await Promise.all([
-    prisma.conversation.count(),
-    prisma.lead.count(),
-    prisma.meeting.count({ where: { status: "scheduled", scheduledAt: { gte: new Date() } } }),
-    prisma.handoff.count({ where: { status: "pending" } }),
-    prisma.callLog.count({ where: { direction: "inbound" } }),
-    prisma.callLog.count({ where: { direction: "outbound" } }),
-    prisma.callLog.count({ where: { outcome: "answered" } }),
-    prisma.callLog.count({ where: { outcome: { in: ["missed", "no_answer"] } } }),
+    prisma.conversation.count({ where: { tenantId } }),
+    prisma.lead.count({ where: { tenantId } }),
+    prisma.meeting.count({ where: { tenantId, status: "scheduled", scheduledAt: { gte: new Date() } } }),
+    prisma.handoff.count({ where: { tenantId, status: "pending" } }),
+    prisma.callLog.count({ where: { tenantId, direction: "inbound" } }),
+    prisma.callLog.count({ where: { tenantId, direction: "outbound" } }),
+    prisma.callLog.count({ where: { tenantId, outcome: "answered" } }),
+    prisma.callLog.count({ where: { tenantId, outcome: { in: ["missed", "no_answer"] } } }),
     prisma.usageLog.aggregate({
-      where: { createdAt: { gte: since } },
+      where: { tenantId, createdAt: { gte: since } },
       _sum: { costUsd: true, tokensIn: true, tokensOut: true },
     }),
     prisma.conversation.findMany({
+      where: { tenantId },
       take: 6,
       orderBy: { updatedAt: "desc" },
       include: { lead: true },
     }),
-    prisma.voiceSession.count({ where: { status: "active" } }),
+    prisma.voiceSession.count({ where: { tenantId, status: "active" } }),
   ]);
 
   const dialed = answered + missed;

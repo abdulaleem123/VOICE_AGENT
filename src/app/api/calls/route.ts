@@ -1,18 +1,26 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clip, requireApi, safeId } from "@/lib/guard";
+import { getActiveTenantId } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
 
   const [logs, inbound, outbound, answered, missed, failed] = await Promise.all([
-    prisma.callLog.findMany({ orderBy: { createdAt: "desc" }, take: 80, include: { lead: true } }),
-    prisma.callLog.count({ where: { direction: "inbound" } }),
-    prisma.callLog.count({ where: { direction: "outbound" } }),
-    prisma.callLog.count({ where: { outcome: "answered" } }),
-    prisma.callLog.count({ where: { outcome: { in: ["missed", "no_answer"] } } }),
-    prisma.callLog.count({ where: { outcome: "failed" } }),
+    prisma.callLog.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+      take: 80,
+      include: { lead: true },
+    }),
+    prisma.callLog.count({ where: { tenantId, direction: "inbound" } }),
+    prisma.callLog.count({ where: { tenantId, direction: "outbound" } }),
+    prisma.callLog.count({ where: { tenantId, outcome: "answered" } }),
+    prisma.callLog.count({ where: { tenantId, outcome: { in: ["missed", "no_answer"] } } }),
+    prisma.callLog.count({ where: { tenantId, outcome: "failed" } }),
   ]);
 
   const totalDialed = answered + missed + failed;
@@ -30,6 +38,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const direction = body.direction === "outbound" ? "outbound" : "inbound";
   const outcome = ["answered", "missed", "no_answer", "failed", "unknown"].includes(body.outcome)
@@ -43,6 +53,7 @@ export async function POST(req: Request) {
 
   const log = await prisma.callLog.create({
     data: {
+      tenantId,
       direction,
       status,
       outcome,
@@ -63,9 +74,14 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const gate = await requireApi(req);
   if (!gate.ok) return gate.response;
+  const tenantId = await getActiveTenantId();
+  if (!tenantId) return NextResponse.json({ error: "No active tenant" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const id = safeId(body.id);
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  const existing = await prisma.callLog.findFirst({ where: { id, tenantId } });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const log = await prisma.callLog.update({
     where: { id },
