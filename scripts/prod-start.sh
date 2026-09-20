@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Voice Agent — production start (Next.js)
+# Voice Agent  production start (Next.js)
 # Builds (unless SKIP_BUILD=1) and starts the server on PORT (default 4000).
 # Usage:  bash scripts/prod-start.sh
 #         SKIP_BUILD=1 bash scripts/prod-start.sh
@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 if [[ ! -f .env ]]; then
-  echo "ERROR: .env missing — run bash scripts/prod-setup.sh first"
+  echo "ERROR: .env missing  run bash scripts/prod-setup.sh first"
   exit 1
 fi
 

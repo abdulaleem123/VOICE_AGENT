@@ -1,5 +1,5 @@
 """
-desktop/api.py — Outbound / inbound call dispatch for desktop Voice Agent.
+desktop/api.py  Outbound / inbound call dispatch for desktop Voice Agent.
 
 Run: python api.py
 Docs: http://localhost:8000/docs
@@ -41,7 +41,7 @@ OUTBOUND_TRUNK = os.getenv("OUTBOUND_TRUNK_ID", "")
 APP_API_URL = os.getenv("APP_URL", "http://localhost:4000").rstrip("/")
 DESKTOP_API_KEY = os.getenv("DESKTOP_WORKER_KEY", "desktop-dev-key")
 
-app = FastAPI(title="Voice Agent — Call Dispatch API", version="1.0.0")
+app = FastAPI(title="Voice Agent  Call Dispatch API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
@@ -139,7 +139,7 @@ def home():
     trunk = OUTBOUND_TRUNK if OUTBOUND_TRUNK else "NOT SET"
     return f"""
     <html><body style="font-family:sans-serif;padding:40px;background:#070b12;color:#e8eef7">
-    <h1>Voice Agent — Call Dispatch</h1>
+    <h1>Voice Agent  Call Dispatch</h1>
     <p>Agent: <code>{AGENT_NAME}</code></p>
     <p>Outbound trunk: <code>{trunk}</code></p>
     <p>SaaS: <code>{APP_API_URL}</code></p>
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     import uvicorn
 
     print("=" * 60)
-    print("  Voice Agent — Outbound Call API")
+    print("  Voice Agent  Outbound Call API")
     print(f"  Agent: {AGENT_NAME}")
     print(f"  Docs:  http://localhost:8000/docs")
     print("=" * 60)

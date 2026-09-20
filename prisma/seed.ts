@@ -40,7 +40,7 @@ const INDUSTRIES: IndustrySeed[] = [
         "A calm hospital front-desk voice agent who books appointments, answers department FAQs, and never gives medical advice.",
       titles: JSON.stringify(["Patient", "Caregiver", "Referring Physician", "Insurance Coordinator"]),
       voiceId: "nova",
-      greeting: "Hello, Meridian Health Partners — this is Maya. How can I help you today?",
+      greeting: "Hello, Meridian Health Partners  this is Maya. How can I help you today?",
     },
     handoffs: [
       {
@@ -48,7 +48,7 @@ const INDUSTRIES: IndustrySeed[] = [
         triggers: ["emergency", "chest pain", "can't breathe", "stroke", "ambulance"],
         action: "transfer",
         transferTo: "Emergency desk",
-        description: "Life-threatening symptoms — redirect to emergency services immediately.",
+        description: "Life-threatening symptoms  redirect to emergency services immediately.",
       },
       {
         name: "Appointment",
@@ -62,7 +62,7 @@ const INDUSTRIES: IndustrySeed[] = [
         triggers: ["bill", "invoice", "insurance claim", "copay"],
         action: "transfer",
         transferTo: "Billing",
-        description: "Account-specific billing — transfer to billing.",
+        description: "Account-specific billing  transfer to billing.",
       },
     ],
     knowledgeFile: "hospital.txt",
@@ -80,7 +80,7 @@ const INDUSTRIES: IndustrySeed[] = [
       description: "A warm host who books tables, answers menu questions, and confirms reservations outbound.",
       titles: JSON.stringify(["Guest", "Party Host", "Corporate Booker"]),
       voiceId: "shimmer",
-      greeting: "Hi, Ember & Oak — Sofia speaking. Table for tonight, or can I help with takeout?",
+      greeting: "Hi, Ember & Oak  Sofia speaking. Table for tonight, or can I help with takeout?",
     },
     handoffs: [
       {
@@ -120,7 +120,7 @@ const INDUSTRIES: IndustrySeed[] = [
       description: "A helpful market associate for hours, aisle info, pickup orders, and outbound deal reminders.",
       titles: JSON.stringify(["Shopper", "Store Manager", "Procurement"]),
       voiceId: "echo",
-      greeting: "Thanks for calling FreshLane Market — Leo here. How can I help?",
+      greeting: "Thanks for calling FreshLane Market  Leo here. How can I help?",
     },
     handoffs: [
       {
@@ -160,7 +160,7 @@ const INDUSTRIES: IndustrySeed[] = [
       description: "A polished property consultant who qualifies buyers/renters and books viewings.",
       titles: JSON.stringify(["Buyer", "Seller", "Tenant", "Landlord", "Investor"]),
       voiceId: "coral",
-      greeting: "Good day — Cornerstone Property Group, Claire speaking. Looking to buy, rent, or book a viewing?",
+      greeting: "Good day  Cornerstone Property Group, Claire speaking. Looking to buy, rent, or book a viewing?",
     },
     handoffs: [
       {
@@ -201,7 +201,7 @@ const INDUSTRIES: IndustrySeed[] = [
         "A senior outbound and inbound specialist who qualifies executives, answers from the knowledge base, and books demos when pricing or NDA comes up.",
       titles: JSON.stringify(["CEO", "CFO", "CTO", "VP Engineering", "Founder", "Head of Product"]),
       voiceId: "shimmer",
-      greeting: "Hey — Aria from Nimbus Forge. Thanks for connecting. How can I help today?",
+      greeting: "Hey  Aria from Nimbus Forge. Thanks for connecting. How can I help today?",
     },
     handoffs: [
       {

@@ -1,5 +1,5 @@
 """
-desktop/token_server.py — Browser / desktop staging voice session.
+desktop/token_server.py  Browser / desktop staging voice session.
 
 Run: python token_server.py
 Open: http://localhost:3001
@@ -69,7 +69,7 @@ async def index():
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Voice Agent — Desktop Staging</title>
+<title>Voice Agent  Desktop Staging</title>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
 <style>
   body { font-family: Segoe UI, sans-serif; background:#070b12; color:#e8eef7; min-height:100vh; display:flex; align-items:center; justify-content:center; }
@@ -96,7 +96,7 @@ async def index():
 </div>
 <script>
 let room=null;
-function log(m){const el=document.getElementById('log'); el.innerHTML+=`<div>${new Date().toLocaleTimeString()} — ${m}</div>`; el.scrollTop=el.scrollHeight;}
+function log(m){const el=document.getElementById('log'); el.innerHTML+=`<div>${new Date().toLocaleTimeString()}  ${m}</div>`; el.scrollTop=el.scrollHeight;}
 function setStatus(m,c){const el=document.getElementById('status'); el.textContent=m; el.style.color=c==='ok'?'#2ee6c8':c==='err'?'#ff6b7a':'#8b9bb4';}
 async function connect(){
   document.getElementById('connectBtn').disabled=true;
@@ -105,7 +105,7 @@ async function connect(){
     const res=await fetch('/token'); const data=await res.json();
     if(!res.ok) throw new Error(data.error||'token failed');
     room=new LivekitClient.Room({adaptiveStream:true,dynacast:true});
-    room.on(LivekitClient.RoomEvent.Connected,()=>{setStatus('Connected — agent will greet you', 'ok'); document.getElementById('connectBtn').style.display='none'; document.getElementById('disconnectBtn').style.display='block';});
+    room.on(LivekitClient.RoomEvent.Connected,()=>{setStatus('Connected  agent will greet you', 'ok'); document.getElementById('connectBtn').style.display='none'; document.getElementById('disconnectBtn').style.display='block';});
     room.on(LivekitClient.RoomEvent.Disconnected,()=>{setStatus('Disconnected'); document.getElementById('connectBtn').style.display='block'; document.getElementById('connectBtn').disabled=false; document.getElementById('disconnectBtn').style.display='none'; document.getElementById('orb').className='orb';});
     room.on(LivekitClient.RoomEvent.TrackSubscribed,(track)=>{ if(track.kind==='audio'){ const a=track.attach(); a.autoplay=true; document.body.appendChild(a); log('Audio subscribed'); }});
     room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged,(speakers)=>{ document.getElementById('orb').className = speakers.some(s=>s.identity!==data.identity)?'orb speaking':'orb'; });

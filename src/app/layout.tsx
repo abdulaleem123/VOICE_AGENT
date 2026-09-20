@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Voice Agent",
+  title: "Chatversio AI - Voice Agent",
   description: "Single-tenant voice agent for conversations, leads, handoff, and meetings",
 };
 

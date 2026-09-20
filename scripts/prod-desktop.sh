@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Voice Agent — production LiveKit desktop worker (inbound + outbound SIP)
+# Voice Agent  production LiveKit desktop worker (inbound + outbound SIP)
 # Requires LIVEKIT_* and DESKTOP_WORKER_KEY in .env
 # Usage:  bash scripts/prod-desktop.sh
 #         TENANT_SLUG=hospital bash scripts/prod-desktop.sh
@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 if [[ ! -f .env ]]; then
-  echo "ERROR: .env missing — run bash scripts/prod-setup.sh first"
+  echo "ERROR: .env missing  run bash scripts/prod-setup.sh first"
   exit 1
 fi
 

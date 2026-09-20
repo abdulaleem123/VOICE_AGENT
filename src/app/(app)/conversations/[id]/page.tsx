@@ -4,7 +4,7 @@ export default async function ConversationDetail({ params }: { params: Promise<{
   const { id } = await params;
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Live conversation</h1>
+      <h1 className="text-2xl font-semibold text-[var(--accent)]">Live conversation</h1>
       <ChatPane conversationId={id} />
     </div>
   );

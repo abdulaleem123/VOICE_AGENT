@@ -1,4 +1,4 @@
-# Voice Agent — Desktop / Low-latency Worker
+# Voice Agent  Desktop / Low-latency Worker
 
 Staging layer merged from `conversational_ai_Agent` into this SaaS product.
 

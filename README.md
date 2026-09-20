@@ -18,14 +18,14 @@ Sell one product to many industries: pick a tenant, and that industry’s agent,
 
 ## Features
 
-- **Tenant switcher** — `/tenants` + sidebar selector
-- **Agent configuration** — per tenant (tone, interruption, noise cancel, low latency)
-- **Knowledge base** — PDF / DOC / TXT, scoped per tenant
-- **Conversation** — chat + mic + TTS + barge-in
-- **Calls** — inbound / outbound logging, pickup vs miss, LiveKit dial
+- **Tenant switcher**  `/tenants` + sidebar selector
+- **Agent configuration**  per tenant (tone, interruption, noise cancel, low latency)
+- **Knowledge base**  PDF / DOC / TXT, scoped per tenant
+- **Conversation**  chat + mic + TTS + barge-in
+- **Calls**  inbound / outbound logging, pickup vs miss, LiveKit dial
 - **Leads / Handoff / Meetings**
-- **Integrations** — LiveKit + SIP / Telnyx
-- **Desktop worker** — Realtime voice; set `TENANT_SLUG` to load the right pack
+- **Integrations**  LiveKit + SIP / Telnyx
+- **Desktop worker**  Realtime voice; set `TENANT_SLUG` to load the right pack
 
 ## Quick start (local)
 
@@ -92,7 +92,7 @@ Phone calls: `LIVEKIT_*`, trunk IDs, `DESKTOP_WORKER_KEY`, `TENANT_SLUG`.
 
 ## Security
 
-- `.env` is gitignored — never commit secrets
+- `.env` is gitignored  never commit secrets
 - Desktop worker authenticates with `DESKTOP_WORKER_KEY`
 - Guardrails block off-topic / secret fishing and can auto-close chat
 - All operator data is scoped by the active tenant

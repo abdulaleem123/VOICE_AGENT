@@ -86,7 +86,7 @@ async def fetch_agent_profile() -> dict:
         "voiceId": os.getenv("OPENAI_VOICE", "shimmer"),
         "tone": "professional",
         "description": "Desktop voice agent for inbound and outbound conversations.",
-        "greeting": "Hi — thanks for connecting. How can I help you today?",
+        "greeting": "Hi  thanks for connecting. How can I help you today?",
         "shortReplies": True,
         "humanizedTone": True,
         "interruptionEnabled": True,
@@ -111,7 +111,7 @@ def build_instructions(profile: dict, caller_number: Optional[str] = None) -> st
         style.append("Keep replies to 1–2 short spoken sentences.")
     if human:
         style.append(
-            "Sound warm and human — natural fillers like 'sure', 'of course', 'got it'. Never robotic."
+            "Sound warm and human  natural fillers like 'sure', 'of course', 'got it'. Never robotic."
         )
 
     return f"""
@@ -124,7 +124,7 @@ VOICE STYLE:
 
 YOUR JOB:
 1. Greet briefly and ask how you can help.
-2. Answer from the knowledge base only — do not invent facts.
+2. Answer from the knowledge base only  do not invent facts.
 3. Qualify name / company when natural.
 4. For pricing / NDA / meeting requests, offer to book a follow-up instead of dumping prices.
 5. If the caller says goodbye, give a short farewell and call end_call.
@@ -287,13 +287,13 @@ async def entrypoint(ctx: JobContext):
             return
         first_message = (
             f"Caller {contact_name} picked up. Say EXACTLY this short greeting then wait: "
-            f"'{profile.get('greeting') or 'Hi, thanks for picking up — how can I help?'}'"
+            f"'{profile.get('greeting') or 'Hi, thanks for picking up  how can I help?'}'"
         )
     else:
         await session.start(room=ctx.room, agent=agent, room_input_options=room_opts)
         first_message = (
             "Caller connected. Greet briefly with this line then wait for their question: "
-            f"'{profile.get('greeting') or 'Hi — how can I help you today?'}'"
+            f"'{profile.get('greeting') or 'Hi  how can I help you today?'}'"
         )
 
     t0 = time.monotonic()
@@ -326,7 +326,7 @@ async def entrypoint(ctx: JobContext):
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("  Voice Agent — Desktop / Low-latency Worker")
+    print("  Voice Agent  Desktop / Low-latency Worker")
     print("=" * 60)
     print(f"  LiveKit: {os.getenv('LIVEKIT_URL', 'NOT SET')}")
     print(f"  SaaS API: {APP_API_URL}")

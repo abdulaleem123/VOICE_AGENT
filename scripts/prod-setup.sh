@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Voice Agent — production setup
+# Voice Agent  production setup
 # Run once on a fresh server (or after pulling updates) before going live.
 # Usage:  bash scripts/prod-setup.sh
 # =============================================================================

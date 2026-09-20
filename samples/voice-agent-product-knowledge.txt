@@ -1,4 +1,4 @@
-VOICE AGENT PRO — PRODUCT KNOWLEDGE BASE
+VOICE AGENT PRO  PRODUCT KNOWLEDGE BASE
 =========================================
 
 COMPANY
@@ -17,13 +17,13 @@ PRODUCT OVERVIEW
 
 KEY FEATURES
 ------------
-1. Agent configuration — name, tone, greeting, target titles, qualification rounds
-2. Knowledge base — upload product docs; agent answers from your content only
-3. Live conversation — typed chat, microphone (speech-to-text), spoken replies (text-to-speech)
-4. Leads pipeline — captures contact details and persona classification
-5. Handoff rules — pricing, NDA, meeting requests, human transfer
-6. Meeting scheduler — books follow-up calls instead of quoting live on the call
-7. Admin console — health checks, OpenAI cost tracking, inbound/outbound call totals
+1. Agent configuration  name, tone, greeting, target titles, qualification rounds
+2. Knowledge base  upload product docs; agent answers from your content only
+3. Live conversation  typed chat, microphone (speech-to-text), spoken replies (text-to-speech)
+4. Leads pipeline  captures contact details and persona classification
+5. Handoff rules  pricing, NDA, meeting requests, human transfer
+6. Meeting scheduler  books follow-up calls instead of quoting live on the call
+7. Admin console  health checks, OpenAI cost tracking, inbound/outbound call totals
 
 WHO IT IS FOR
 -------------
@@ -52,10 +52,10 @@ an NDA review call with our sales or legal team.
 
 MEETING TYPES
 -------------
-- Discovery call (30 min) — learn about their use case
-- Product demo (45 min) — live walkthrough
-- Pricing call (30 min) — custom quote discussion
-- NDA review (20 min) — paperwork and next steps
+- Discovery call (30 min)  learn about their use case
+- Product demo (45 min)  live walkthrough
+- Pricing call (30 min)  custom quote discussion
+- NDA review (20 min)  paperwork and next steps
 
 COMMON QUESTIONS
 ----------------
@@ -66,7 +66,7 @@ Q: Can it use our own documents?
 A: Yes. Upload PDF, Word, or text files to the knowledge base.
 
 Q: Is it multi-tenant?
-A: No. This deployment is single-tenant — one company per instance.
+A: No. This deployment is single-tenant  one company per instance.
 
 Q: What voices are available?
 A: Multiple OpenAI voices including Nova, Shimmer, Echo, Onyx, and others.

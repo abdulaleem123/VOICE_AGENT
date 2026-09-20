@@ -1,5 +1,5 @@
 export const TTS_INSTRUCTIONS =
-  "Speak with warm, upbeat energy and natural enthusiasm. Sound friendly, confident, and human — like an engaging conversation, never flat or monotone. Use light vocal variety and a pleasant pace.";
+  "Speak with warm, upbeat energy and natural enthusiasm. Sound friendly, confident, and human  like an engaging conversation, never flat or monotone. Use light vocal variety and a pleasant pace.";
 
 export function ttsSpeed() {
   const n = Number(process.env.OPENAI_TTS_SPEED || "1.08");

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { AdminTopbar  } from "@/components/AdminTopbar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -8,9 +9,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (session.role !== "super_admin") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen flex bg-[#08070b]">
+    <div style={{ minHeight: "100vh", display: "flex", backgroundColor: "#ffffff" }}>
       <AdminSidebar name={session.name} />
-      <main className="flex-1 min-w-0 p-6 lg:p-8">{children}</main>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <AdminTopbar name={session.name} />
+        <main style={{ flex: 1, padding: "32px 40px", overflowX: "hidden" }}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

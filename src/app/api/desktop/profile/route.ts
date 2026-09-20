@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     voiceId: agent?.voiceId || "shimmer",
     tone: agent?.tone || "professional",
     description: agent?.description || "",
-    greeting: agent?.greeting || "Hi — how can I help you today?",
+    greeting: agent?.greeting || "Hi  how can I help you today?",
     shortReplies: agent?.shortReplies ?? true,
     humanizedTone: agent?.humanizedTone ?? true,
     interruptionEnabled: agent?.interruptionEnabled ?? true,

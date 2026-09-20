@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Voice Agent — one-shot production deploy helper
+# Voice Agent  one-shot production deploy helper
 # Setup → build → start Next in background; optionally start desktop worker.
 # Usage:  bash scripts/prod-deploy.sh
 #         WITH_DESKTOP=1 TENANT_SLUG=restaurant bash scripts/prod-deploy.sh

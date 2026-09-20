@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       messages: {
         create: {
           role: "assistant",
-          content: agent?.greeting || "Hi — thanks for connecting. Who am I speaking with today?",
+          content: agent?.greeting || "Hi  thanks for connecting. Who am I speaking with today?",
         },
       },
     },

@@ -12,7 +12,7 @@ async function main() {
     (await prisma.tenant.findFirst({ where: { slug: "software-house" } })) ||
     (await prisma.tenant.findFirst({ where: { active: true }, orderBy: { sortOrder: "asc" } }));
   if (!tenant) {
-    throw new Error("No tenant found — run npm run db:seed first");
+    throw new Error("No tenant found  run npm run db:seed first");
   }
 
   const path = resolve(process.cwd(), "samples", FILENAME);
@@ -34,7 +34,7 @@ async function main() {
     }));
     console.log("Embedded", chunks.length, "chunks with OpenAI.");
   } catch {
-    console.log("OpenAI key missing or invalid — stored text without embeddings.");
+    console.log("OpenAI key missing or invalid  stored text without embeddings.");
   }
 
   await prisma.knowledgeDoc.create({

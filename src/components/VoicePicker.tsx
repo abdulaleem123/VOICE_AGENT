@@ -11,7 +11,7 @@ export function VoicePicker({
 }) {
   const groups: { label: string; gender: VoiceOption["gender"] }[] = [
     { label: "Female", gender: "female" },
-    { label: "Male", gender: "male" },
+    { label: "Male",   gender: "male"   },
     { label: "Neutral", gender: "neutral" },
   ];
 
@@ -19,7 +19,9 @@ export function VoicePicker({
     <div className="space-y-6">
       {groups.map((g) => (
         <div key={g.gender}>
-          <p className="text-xs tracking-[0.18em] uppercase text-[var(--muted)] mb-3">{g.label} voices</p>
+          <p className="text-xs tracking-[0.18em] uppercase text-gray-500 mb-3">
+            {g.label} voices
+          </p>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
             {VOICES.filter((v) => v.gender === g.gender).map((v) => {
               const selected = v.id === value;
@@ -28,18 +30,25 @@ export function VoicePicker({
                   key={v.id}
                   type="button"
                   onClick={() => onChange(v.id)}
-                  className={`text-left rounded-2xl overflow-hidden border transition ${
-                    selected ? "border-[#2ee6c8] ring-2 ring-[#2ee6c8]/30" : "border-[var(--line)] hover:border-white/20"
+                  className={`text-left rounded-[10px] overflow-hidden border transition bg-white ${
+                    selected
+                      ? "border-[#2ee6c8] ring-2 ring-[#2ee6c8]/30"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className="relative h-36">
+                  {/* Image  no dark overlay */}
+                  <div className="h-52 bg-white overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={v.avatar} alt={v.name} className="h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-2 left-3 right-3">
-                      <p className="font-medium">{v.name}</p>
-                      <p className="text-xs text-white/70">{v.tagline}</p>
-                    </div>
+                    <img
+                      src={v.avatar}
+                      alt={v.name}
+                      className="h-full w-full object-cover object-top"
+                    />
+                  </div>
+                  {/* Name + tagline on white background */}
+                  <div className="bg-white px-3 py-2.5 border-t border-gray-100">
+                    <p className="font-semibold text-sm text-gray-900">{v.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{v.tagline}</p>
                   </div>
                 </button>
               );

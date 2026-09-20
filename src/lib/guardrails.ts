@@ -84,7 +84,7 @@ export function guardrailReply(
       return {
         strikes: next,
         endChat: true,
-        reply: `I've noticed a few off-topic requests. I'm going to close this chat now. When you're ready to discuss our product or book a meeting, please start a new conversation — I'd be happy to help then.`,
+        reply: `I've noticed a few off-topic requests. I'm going to close this chat now. When you're ready to discuss our product or book a meeting, please start a new conversation  I'd be happy to help then.`,
       };
     }
     if (next === 2) {
@@ -97,7 +97,7 @@ export function guardrailReply(
     return {
       strikes: next,
       endChat: false,
-      reply: `I'm here as a business assistant for our product — I can't help with coding, homework, or general trivia. Tell me about your company or what you're looking to solve, and I'll guide you from there.`,
+      reply: `I'm here as a business assistant for our product  I can't help with coding, homework, or general trivia. Tell me about your company or what you're looking to solve, and I'll guide you from there.`,
     };
   }
 

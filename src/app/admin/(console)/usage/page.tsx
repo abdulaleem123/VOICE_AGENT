@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { usd, usdShort } from "@/lib/costs";
+import { DollarSign, Cpu, Mic, Volume2, FileText } from "lucide-react";
+import {
+  Chart as ChartJS, LineElement, PointElement, CategoryScale,
+  LinearScale, Filler, Tooltip,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Filler, Tooltip);
+
+const NAVY   = "#0a1628";
+const ACCENT = "#3cc7ff";
+const GRID   = "rgba(10,22,40,0.07)";
 
 type Usage = {
   total: number;
@@ -11,65 +22,138 @@ type Usage = {
   recent: { id: string; type: string; model: string; costUsd: number; createdAt: string }[];
 };
 
+const TYPE_ICONS: Record<string, { icon: React.ReactNode; bg: string; color: string }> = {
+  chat:       { icon: <Cpu size={16} />,      bg: "#e8f0fe", color: "#1a56db" },
+  embedding:  { icon: <FileText size={16} />, bg: "#e3fcef", color: "#057a55" },
+  whisper:    { icon: <Mic size={16} />,      bg: "#edebfe", color: "#6c2bd9" },
+  tts:        { icon: <Volume2 size={16} />,  bg: "#fdf6b2", color: "#8e4b10" },
+  default:    { icon: <DollarSign size={16}/>,bg: "#f0f3f8", color: "#6b7fa0" },
+};
+
 export default function UsagePage() {
   const [data, setData] = useState<Usage | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/usage")
-      .then((r) => r.json())
-      .then(setData);
+    fetch("/api/admin/usage").then((r) => r.json()).then(setData);
   }, []);
 
-  if (!data) return <p className="text-[var(--muted)]">Loading cost usage…</p>;
+  if (!data) return <p style={{ color: "#6b7fa0", fontFamily: "'Segoe UI', system-ui" }}>Loading cost usage…</p>;
+
+  const chartData = {
+    labels: data.series.map((s) => s.date),
+    datasets: [{
+      label: "Cost (USD)",
+      data: data.series.map((s) => s.cost),
+      borderColor: NAVY, backgroundColor: "rgba(10,22,40,0.07)",
+      fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: NAVY, borderWidth: 2,
+    }],
+  };
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: "flex", flexDirection: "column", gap: 28,
+      fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+
       <header>
-        <p className="text-xs tracking-[0.2em] uppercase text-[#f5b942]">OpenAI</p>
-        <h1 className="text-3xl font-semibold mt-1">Cost usage</h1>
-        <p className="text-[var(--muted)] mt-2">Estimated spend from chat, embeddings, Whisper, and TTS on this tenant.</p>
+        <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase",
+          color: ACCENT, margin: 0 }}>OpenAI</p>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: NAVY, margin: "4px 0 0" }}>
+          Cost usage
+        </h1>
+        <p style={{ color: "#6b7fa0", marginTop: 6, fontSize: "0.9rem" }}>
+          Estimated spend from chat, embeddings, Whisper, and TTS on this tenant.
+        </p>
       </header>
-      <div className="glass rounded-2xl p-6">
-        <p className="text-sm text-[var(--muted)]">Total tracked</p>
-        <p className="text-4xl font-semibold mt-1">{usdShort(data.total)}</p>
-        <div className="h-56 mt-6">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.series}>
-              <defs>
-                <linearGradient id="c" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f5b942" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#f5b942" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" stroke="#8b9bb4" fontSize={11} />
-              <YAxis stroke="#8b9bb4" fontSize={11} />
-              <Tooltip contentStyle={{ background: "#101828", border: "1px solid #233" }} />
-              <Area type="monotone" dataKey="cost" stroke="#f5b942" fill="url(#c)" />
-            </AreaChart>
-          </ResponsiveContainer>
+
+      {/* Total + line chart */}
+      <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: "#fdf6b2",
+            color: "#8e4b10", display: "grid", placeItems: "center", flexShrink: 0 }}>
+            <DollarSign size={22} />
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.1em", color: "#6b7fa0" }}>Total tracked</p>
+            <p style={{ margin: "2px 0 0", fontSize: "2rem", fontWeight: 800, color: NAVY, lineHeight: 1 }}>
+              {usdShort(data.total)}
+            </p>
+          </div>
+        </div>
+        <div style={{ height: 200 }}>
+          <Line data={chartData} options={{
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 900 },
+            plugins: { legend: { display: false },
+              tooltip: { mode: "index", intersect: false,
+                callbacks: { label: (ctx: any) => ` $${ctx.parsed.y.toFixed(4)}` } } },
+            scales: {
+              x: { grid: { color: GRID }, ticks: { color: "#6b7fa0", font: { size: 11 } } },
+              y: { grid: { color: GRID }, ticks: { color: "#6b7fa0", font: { size: 11 },
+                callback: (v: any) => `$${v}` }, beginAtZero: true },
+            },
+          } as any} />
         </div>
       </div>
-      <div className="grid md:grid-cols-4 gap-4">
-        {Object.entries(data.byType).map(([type, v]) => (
-          <div key={type} className="glass rounded-2xl p-4">
-            <p className="text-xs uppercase tracking-widest text-[var(--muted)]">{type}</p>
-            <p className="text-xl font-semibold mt-2">{usd(v.cost)}</p>
-            <p className="text-xs text-[var(--muted)] mt-1">{v.count} calls</p>
-          </div>
-        ))}
+
+      {/* By type cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 14 }}>
+        {Object.entries(data.byType).map(([type, v]) => {
+          const style = TYPE_ICONS[type] ?? TYPE_ICONS.default;
+          return (
+            <div key={type} style={{ backgroundColor: "#ffffff", borderRadius: 10,
+              border: "1.5px solid #e2e8f0", padding: "16px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 7, backgroundColor: style.bg,
+                  color: style.color, display: "grid", placeItems: "center" }}>
+                  {style.icon}
+                </div>
+                <p style={{ margin: 0, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.08em", color: "#6b7fa0" }}>{type}</p>
+              </div>
+              <p style={{ margin: 0, fontSize: "1.4rem", fontWeight: 800, color: NAVY }}>{usd(v.cost)}</p>
+              <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#6b7fa0" }}>{v.count} calls</p>
+            </div>
+          );
+        })}
       </div>
-      <div className="glass rounded-2xl overflow-hidden">
-        {data.recent.map((r) => (
-          <div key={r.id} className="px-4 py-3 border-b border-white/6 flex justify-between text-sm">
-            <span className="capitalize">
-              {r.type} · {r.model}
-            </span>
-            <span>
-              {usd(r.costUsd)} · {new Date(r.createdAt).toLocaleString()}
-            </span>
-          </div>
-        ))}
-        {data.recent.length === 0 ? <p className="p-4 text-[var(--muted)]">No usage yet.</p> : null}
+
+      {/* Recent log */}
+      <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", overflow: "hidden" }}>
+        <div style={{ padding: "14px 20px", borderBottom: "1.5px solid #e2e8f0", backgroundColor: "#f7f9fc" }}>
+          <p style={{ margin: 0, fontWeight: 700, fontSize: "0.85rem", color: NAVY }}>Recent usage</p>
+        </div>
+        {data.recent.length === 0 ? (
+          <p style={{ padding: "24px", color: "#6b7fa0", textAlign: "center", fontSize: "0.875rem" }}>
+            No usage yet.
+          </p>
+        ) : data.recent.map((r, i) => {
+          const style = TYPE_ICONS[r.type] ?? TYPE_ICONS.default;
+          return (
+            <div key={r.id} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "12px 20px", fontSize: "0.875rem",
+              borderBottom: i < data.recent.length - 1 ? "1px solid #f0f3f8" : "none",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 6, backgroundColor: style.bg,
+                  color: style.color, display: "grid", placeItems: "center", flexShrink: 0 }}>
+                  {style.icon}
+                </div>
+                <span style={{ color: NAVY, fontWeight: 500, textTransform: "capitalize" }}>
+                  {r.type} · {r.model}
+                </span>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ margin: 0, fontWeight: 700, color: NAVY }}>{usd(r.costUsd)}</p>
+                <p style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "#6b7fa0" }}>
+                  {new Date(r.createdAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
