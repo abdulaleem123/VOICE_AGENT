@@ -31,6 +31,40 @@ ChartJS.register(
   RadialLinearScale
 );
 
+const NAVY = "#0a1628";
+const ACCENT = "#1e56cc";
+
+const ANIM_STYLES = `
+  @keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.85); }
+    70% { opacity: 1; transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .page-in { animation: pageFadeIn 0.4s ease both; }
+  .rise-in { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .pop-in { animation: popIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .row-in { animation: rowIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .card-hover { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(10,22,40,0.10); }
+  .btn-anim { transition: transform 0.15s ease, opacity 0.15s ease; }
+  .btn-anim:hover { transform: translateY(-2px); }
+  .btn-anim:active { transform: translateY(0px) scale(0.97); }
+  .row-hover { transition: background-color 0.15s ease, transform 0.15s ease; }
+  .row-hover:hover { background-color: #fafbfc; transform: translateX(2px); }
+`;
+
 type Dash = {
   conversations: number;
   leads: number;
@@ -59,14 +93,19 @@ function ChartCard({
   value,
   hint,
   children,
+  delay = 0,
 }: {
   title: string;
   value?: string | number;
   hint?: string;
   children: React.ReactNode;
+  delay?: number;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-4 flex flex-col gap-2 shadow-sm border border-gray-100">
+    <div
+      className="bg-white rounded-2xl p-4 flex flex-col gap-2 shadow-sm border border-gray-100 pop-in card-hover"
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <div>
         <p className="text-xs text-gray-500 uppercase tracking-wider">{title}</p>
         {value !== undefined && (
@@ -117,8 +156,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <header>
+    <div className="page-in space-y-8">
+      <style>{ANIM_STYLES}</style>
+
+      <header className="rise-in" style={{ animationDelay: "0ms" }}>
         <p className="text-xs tracking-[0.2em] uppercase text-[var(--accent)]">
           Workspace
         </p>
@@ -131,7 +172,7 @@ export default function DashboardPage() {
       {/* ===== CALLS SECTION ===== */}
       <section className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* 1. Doughnut - Call Direction */}
-        <ChartCard title="Call Direction" value={`${inbound + outbound} total`}>
+        <ChartCard title="Call Direction" value={`${inbound + outbound} total`} delay={40}>
           <Doughnut
             data={{
               labels: ["Inbound", "Outbound"],
@@ -144,7 +185,7 @@ export default function DashboardPage() {
                   backgroundColor:
                     inbound + outbound === 0
                       ? ["#e5e7eb", "#e5e7eb"]
-                      : ["#3b82f6", "#8b5cf6"],
+                      : [ACCENT, "#8b5cf6"],
                   borderWidth: 0,
                 },
               ],
@@ -161,6 +202,7 @@ export default function DashboardPage() {
           title="Pickup Rate"
           value={`${data.pickupRate}%`}
           hint={`${answered} picked up`}
+          delay={90}
         >
           <Doughnut
             data={{
@@ -187,14 +229,14 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 3. Horizontal Bar - Inbound */}
-        <ChartCard title="Inbound" value={inbound}>
+        <ChartCard title="Inbound" value={inbound} delay={140}>
           <Bar
             data={{
               labels: ["Inbound"],
               datasets: [
                 {
                   data: [inbound],
-                  backgroundColor: "#3b82f6",
+                  backgroundColor: ACCENT,
                   borderRadius: 8,
                   barThickness: 18,
                 },
@@ -212,7 +254,7 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 4. Horizontal Bar - Outbound */}
-        <ChartCard title="Outbound" value={outbound}>
+        <ChartCard title="Outbound" value={outbound} delay={190}>
           <Bar
             data={{
               labels: ["Outbound"],
@@ -243,6 +285,7 @@ export default function DashboardPage() {
         <ChartCard
           title="Tokens (30d)"
           value={(tokensIn + tokensOut).toLocaleString()}
+          delay={40}
         >
           <Bar
             data={{
@@ -250,7 +293,7 @@ export default function DashboardPage() {
               datasets: [
                 {
                   data: [tokensIn, tokensOut],
-                  backgroundColor: ["#06b6d4", "#f59e0b"],
+                  backgroundColor: [ACCENT, "#f59e0b"],
                   borderRadius: 6,
                 },
               ],
@@ -266,14 +309,14 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 6. Polar Area - Input Tokens */}
-        <ChartCard title="Input Tokens" value={tokensIn.toLocaleString()}>
+        <ChartCard title="Input Tokens" value={tokensIn.toLocaleString()} delay={90}>
           <PolarArea
             data={{
               labels: ["Input"],
               datasets: [
                 {
                   data: [tokensIn || 0.0001], // tiny value so chart still renders
-                  backgroundColor: ["rgba(6, 182, 212, 0.7)"],
+                  backgroundColor: ["rgba(30, 86, 204, 0.7)"],
                   borderWidth: 0,
                 },
               ],
@@ -288,7 +331,7 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 7. Polar Area - Output Tokens */}
-        <ChartCard title="Output Tokens" value={tokensOut.toLocaleString()}>
+        <ChartCard title="Output Tokens" value={tokensOut.toLocaleString()} delay={140}>
           <PolarArea
             data={{
               labels: ["Output"],
@@ -310,15 +353,15 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 8. Line Chart - Cost trend */}
-        <ChartCard title="Est. Cost (30d)" value={usdShort(cost)}>
+        <ChartCard title="Est. Cost (30d)" value={usdShort(cost)} delay={190}>
           <Line
             data={{
               labels: ["W1", "W2", "W3", "W4"],
               datasets: [
                 {
                   data: [0, 0, 0, cost], // starts from zero → current value
-                  borderColor: "#a855f7",
-                  backgroundColor: "rgba(168, 85, 247, 0.15)",
+                  borderColor: ACCENT,
+                  backgroundColor: "rgba(30, 86, 204, 0.12)",
                   fill: true,
                   tension: 0.4,
                   pointRadius: 0,
@@ -340,7 +383,7 @@ export default function DashboardPage() {
       {/* ===== ACTIVITY ===== */}
       <section className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* 9. Mini Bar - Conversations */}
-        <ChartCard title="Conversations" value={conversations}>
+        <ChartCard title="Conversations" value={conversations} delay={40}>
           <Bar
             data={{
               labels: [""],
@@ -364,14 +407,14 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 10. Mini Bar - Leads */}
-        <ChartCard title="Leads" value={leads}>
+        <ChartCard title="Leads" value={leads} delay={90}>
           <Bar
             data={{
               labels: [""],
               datasets: [
                 {
                   data: [leads],
-                  backgroundColor: "#3b82f6",
+                  backgroundColor: ACCENT,
                   borderRadius: 8,
                   barThickness: 22,
                 },
@@ -388,7 +431,7 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 11. Mini Bar - Handoffs */}
-        <ChartCard title="Pending Handoffs" value={handoffs}>
+        <ChartCard title="Pending Handoffs" value={handoffs} delay={140}>
           <Bar
             data={{
               labels: [""],
@@ -412,7 +455,7 @@ export default function DashboardPage() {
         </ChartCard>
 
         {/* 12. Doughnut - Active Sessions */}
-        <ChartCard title="Active Sessions" value={activeSessions}>
+        <ChartCard title="Active Sessions" value={activeSessions} delay={190}>
           <Doughnut
             data={{
               labels: ["Active", "Remaining"],
@@ -439,26 +482,34 @@ export default function DashboardPage() {
       </section>
 
       {/* Recent conversations */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 rise-in" style={{ animationDelay: "260ms" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-medium text-gray-900">Recent conversations</h2>
           <div style={{ display: "flex", gap: 8 }}>
-            <Link href="/calls" style={{
-              display: "inline-flex", alignItems: "center",
-              padding: "8px 18px", borderRadius: 8,
-              border: "2px solid #0a1628", backgroundColor: "#ffffff",
-              color: "#0a1628", fontWeight: 700, fontSize: "0.82rem",
-              textDecoration: "none", boxShadow: "3px 3px 0px #000000",
-            }}>
+            <Link
+              href="/calls"
+              className="btn-anim"
+              style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "8px 18px", borderRadius: 8,
+                border: `1.5px solid ${ACCENT}`, backgroundColor: "#ffffff",
+                color: ACCENT, fontWeight: 700, fontSize: "0.82rem",
+                textDecoration: "none",
+              }}
+            >
               Calls
             </Link>
-            <Link href="/conversations" style={{
-              display: "inline-flex", alignItems: "center",
-              padding: "8px 18px", borderRadius: 8,
-              border: "2px solid #0a1628", backgroundColor: "#0a1628",
-              color: "#ffffff", fontWeight: 700, fontSize: "0.82rem",
-              textDecoration: "none", boxShadow: "3px 3px 0px #000000",
-            }}>
+            <Link
+              href="/conversations"
+              className="btn-anim"
+              style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "8px 18px", borderRadius: 8,
+                border: `1.5px solid ${ACCENT}`, backgroundColor: ACCENT,
+                color: "#ffffff", fontWeight: 700, fontSize: "0.82rem",
+                textDecoration: "none",
+              }}
+            >
               Open all
             </Link>
           </div>
@@ -467,11 +518,12 @@ export default function DashboardPage() {
           {data.recent.length === 0 ? (
             <p className="text-gray-400 text-sm">No conversations yet.</p>
           ) : (
-            data.recent.map((c) => (
+            data.recent.map((c, i) => (
               <Link
                 key={c.id}
                 href={`/conversations/${c.id}`}
-                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 row-in row-hover"
+                style={{ animationDelay: `${280 + i * 45}ms` }}
               >
                 <div>
                   <p className="text-gray-900">

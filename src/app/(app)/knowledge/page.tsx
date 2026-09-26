@@ -12,7 +12,7 @@ type Doc = {
   preview?: string;
 };
 
-const NAVY = "#0a1628";
+const ACCENT = "#1e56cc";
 
 export default function KnowledgePage() {
   const [docs, setDocs] = useState<Doc[]>([]);
@@ -47,13 +47,32 @@ export default function KnowledgePage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .anim-section { animation: fadeSlideUp 0.5s ease both; }
+
+        @keyframes rowIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .anim-row { animation: rowIn 0.35s ease both; }
+
+        @keyframes pulseSoft {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        .anim-pulse { animation: pulseSoft 1.4s ease-in-out infinite; }
+      `}</style>
 
       {/* Header */}
-      <header>
-        <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#1e56cc", margin: 0 }}>
+      <header className="anim-section" style={{ animationDelay: "0ms" }}>
+        <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: ACCENT, margin: 0 }}>
           Grounding
         </p>
-        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: NAVY, margin: "4px 0 0" }}>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: ACCENT, margin: "4px 0 0" }}>
           Knowledge base
         </h1>
         <p style={{ color: "#6b7fa0", marginTop: 6, fontSize: "0.9rem" }}>
@@ -71,18 +90,20 @@ export default function KnowledgePage() {
           const file = e.dataTransfer.files?.[0];
           if (file) upload(file);
         }}
+        className="anim-section"
         style={{
           display: "grid",
           placeItems: "center",
           padding: "48px 24px",
           borderRadius: 10,
-          border: `2px dashed ${dragOver ? NAVY : "#c8d3e8"}`,
-          backgroundColor: dragOver ? "rgba(10,22,40,0.04)" : "#ffffff",
+          border: `2px dashed ${dragOver ? ACCENT : "#c8d3e8"}`,
+          backgroundColor: dragOver ? "rgba(30,86,204,0.05)" : "#ffffff",
           backgroundImage: dragOver ? "none" : "radial-gradient(circle at 1px 1px, #ced3de 1px, transparent 0)",
           backgroundSize: "24px 24px",
           cursor: busy ? "not-allowed" : "pointer",
           transition: "border-color 0.2s, background-color 0.2s",
           textAlign: "center",
+          animationDelay: "80ms",
         }}
       >
         <input
@@ -93,14 +114,18 @@ export default function KnowledgePage() {
           disabled={busy}
         />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 10,
-            backgroundColor: NAVY, display: "grid", placeItems: "center",
-          }}>
+          <div
+            className={busy ? "anim-pulse" : undefined}
+            style={{
+              width: 52, height: 52, borderRadius: 10,
+              backgroundColor: ACCENT, display: "grid", placeItems: "center",
+              transition: "transform 0.2s",
+            }}
+          >
             <UploadCloud size={24} color="#ffffff" />
           </div>
           <div>
-            <p style={{ margin: 0, fontWeight: 700, fontSize: "0.95rem", color: NAVY }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: "0.95rem", color: ACCENT }}>
               {busy ? "Reading & embedding…" : "Drop or choose a file"}
             </p>
             <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#6b7fa0" }}>
@@ -108,14 +133,15 @@ export default function KnowledgePage() {
             </p>
           </div>
           {!busy && (
-            <span style={{
-              display: "inline-block", marginTop: 4,
-              padding: "8px 20px", borderRadius: 8,
-              backgroundColor: NAVY, color: "#ffffff",
-              fontSize: "0.82rem", fontWeight: 700,
-              border: `2px solid ${NAVY}`,
-              boxShadow: "3px 3px 0px #000000",
-            }}>
+            <span
+              style={{
+                display: "inline-block", marginTop: 4,
+                padding: "8px 20px", borderRadius: 8,
+                backgroundColor: ACCENT, color: "#ffffff",
+                fontSize: "0.82rem", fontWeight: 700,
+                transition: "opacity 0.2s",
+              }}
+            >
               Browse files
             </span>
           )}
@@ -124,7 +150,7 @@ export default function KnowledgePage() {
 
       {/* Status message */}
       {msg && (
-        <p style={{ fontSize: "0.875rem", color: NAVY, fontWeight: 600, margin: 0 }}>
+        <p className="anim-row" style={{ fontSize: "0.875rem", color: ACCENT, fontWeight: 600, margin: 0 }}>
           ✓ {msg}
         </p>
       )}
@@ -133,23 +159,30 @@ export default function KnowledgePage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
         {docs.length === 0 && (
-          <div style={{
-            padding: "32px", borderRadius: 10,
-            border: "1.5px solid #e2e8f0", backgroundColor: "#ffffff",
-            textAlign: "center", color: "#6b7fa0", fontSize: "0.875rem",
-          }}>
+          <div
+            className="anim-section"
+            style={{
+              padding: "32px", borderRadius: 10,
+              border: "1.5px solid #e2e8f0", backgroundColor: "#ffffff",
+              textAlign: "center", color: "#6b7fa0", fontSize: "0.875rem",
+              animationDelay: "140ms",
+            }}
+          >
             No documents yet. Upload a file above to get started.
           </div>
         )}
 
-        {docs.map((d) => (
+        {docs.map((d, i) => (
           <div
             key={d.id}
+            className="anim-row"
             style={{
               display: "flex", alignItems: "flex-start",
               justifyContent: "space-between", gap: 16,
               padding: "16px 18px", borderRadius: 10,
               border: "1.5px solid #e2e8f0", backgroundColor: "#ffffff",
+              animationDelay: `${i * 60}ms`,
+              transition: "border-color 0.2s, box-shadow 0.2s",
             }}
           >
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14, minWidth: 0 }}>
@@ -159,10 +192,10 @@ export default function KnowledgePage() {
                 backgroundColor: "#f0f3f8",
                 display: "grid", placeItems: "center",
               }}>
-                <FileText size={18} color={NAVY} />
+                <FileText size={18} color={ACCENT} />
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem", color: NAVY,
+                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem", color: ACCENT,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {d.filename}
                 </p>
@@ -187,10 +220,16 @@ export default function KnowledgePage() {
                 flexShrink: 0, background: "transparent", border: "none",
                 cursor: "pointer", padding: 6, borderRadius: 6,
                 color: "#c0cad8", display: "grid", placeItems: "center",
-                transition: "color 0.15s",
+                transition: "color 0.15s, transform 0.15s",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#d93025")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#c0cad8")}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = ACCENT;
+                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = "#c0cad8";
+                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+              }}
             >
               <Trash2 size={16} />
             </button>

@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { Save, CheckCircle, XCircle } from "lucide-react";
 
 const NAVY = "#0a1628";
+const ACCENT = "#1e56cc";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", height: 40, padding: "0 12px", borderRadius: 8,
   border: "1.5px solid #e2e8f0", backgroundColor: "#f7f9fc",
   color: NAVY, fontSize: "0.875rem", outline: "none",
   boxSizing: "border-box", fontFamily: "inherit",
+  transition: "border-color 0.15s ease, background-color 0.15s ease",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -17,6 +19,29 @@ const labelStyle: React.CSSProperties = {
   color: "#6b7fa0", textTransform: "uppercase",
   letterSpacing: "0.1em", marginBottom: 6,
 };
+
+const ANIM_STYLES = `
+  @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .page-in { animation: pageFadeIn 0.4s ease both; }
+  .rise-in { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .row-in { animation: rowIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .pop-in { animation: popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .btn-anim { transition: transform 0.15s ease, opacity 0.15s ease; }
+  .btn-anim:hover { transform: translateY(-2px); }
+  .btn-anim:active { transform: translateY(0px) scale(0.97); }
+`;
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -53,13 +78,14 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28,
+    <div className="page-in" style={{ display: "flex", flexDirection: "column", gap: 28,
       fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <style>{ANIM_STYLES}</style>
 
       {/* Header */}
-      <header>
+      <header className="rise-in" style={{ animationDelay: "0ms" }}>
         <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase",
-          color: "#1e56cc", margin: 0, fontWeight: 600 }}>
+          color: ACCENT, margin: 0, fontWeight: 600 }}>
           Workspace
         </p>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: NAVY, margin: "4px 0 0" }}>
@@ -71,8 +97,8 @@ export default function SettingsPage() {
       </header>
 
       {/* Settings form */}
-      <section style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", padding: "24px" }}>
+      <section className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "24px", animationDelay: "80ms" }}>
         <p style={{ margin: "0 0 20px", fontWeight: 700, fontSize: "0.9rem", color: NAVY }}>
           General
         </p>
@@ -85,38 +111,30 @@ export default function SettingsPage() {
                 value={settings[f.key] || ""}
                 placeholder={f.placeholder}
                 onChange={(e) => setSettings({ ...settings, [f.key]: e.target.value })}
-                onFocus={(e) => { e.target.style.borderColor = NAVY; e.target.style.backgroundColor = "#fff"; }}
+                onFocus={(e) => { e.target.style.borderColor = ACCENT; e.target.style.backgroundColor = "#fff"; }}
                 onBlur={(e)  => { e.target.style.borderColor = "#e2e8f0"; e.target.style.backgroundColor = "#f7f9fc"; }}
               />
             </div>
           ))}
         </div>
 
-        {/* Save button */}
+        {/* Save button  single accent color */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={save}
+            className="btn-anim"
             style={{
               display: "inline-flex", alignItems: "center", gap: 7,
               padding: "10px 22px", borderRadius: 8,
-              border: `2px solid ${NAVY}`, backgroundColor: NAVY,
+              border: `1.5px solid ${ACCENT}`, backgroundColor: ACCENT,
               color: "#ffffff", fontWeight: 700, fontSize: "0.875rem",
-              cursor: "pointer", boxShadow: "3px 3px 0px #000000",
-              transition: "transform 0.1s, box-shadow 0.1s",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translate(2px, 2px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "1px 1px 0px #000000";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translate(0, 0)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "3px 3px 0px #000000";
+              cursor: "pointer",
             }}
           >
             <Save size={15} /> Save settings
           </button>
           {saved && (
-            <span style={{ fontSize: "0.875rem", color: "#057a55", fontWeight: 700 }}>
+            <span className="pop-in" style={{ fontSize: "0.875rem", color: "#057a55", fontWeight: 700 }}>
               ✓ {saved}
             </span>
           )}
@@ -124,8 +142,8 @@ export default function SettingsPage() {
       </section>
 
       {/* OpenAI info */}
-      <section style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", padding: "24px" }}>
+      <section className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "24px", animationDelay: "160ms" }}>
         <p style={{ margin: "0 0 16px", fontWeight: 700, fontSize: "0.9rem", color: NAVY }}>
           OpenAI
         </p>
@@ -145,8 +163,8 @@ export default function SettingsPage() {
         </p>
 
         {/* API key status */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
-          padding: "14px 18px", borderRadius: 10,
+        <div className="pop-in" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
+          padding: "14px 18px", borderRadius: 10, animationDelay: "220ms",
           backgroundColor: meta?.openaiConfigured ? "#e3fcef" : "#fce8f3",
           border: `1.5px solid ${meta?.openaiConfigured ? "#84e1bc" : "#f8b4d9"}` }}>
           {meta?.openaiConfigured
@@ -169,11 +187,12 @@ export default function SettingsPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 0,
           border: "1.5px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
           {modelRows.map(({ label, value }, i) => (
-            <div key={label} style={{
+            <div key={label} className="row-in" style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               padding: "12px 16px",
               borderBottom: i < modelRows.length - 1 ? "1px solid #f0f3f8" : "none",
               backgroundColor: "#ffffff",
+              animationDelay: `${260 + i * 40}ms`,
             }}>
               <span style={{ fontSize: "0.82rem", color: "#6b7fa0", fontWeight: 600,
                 textTransform: "uppercase", letterSpacing: "0.06em" }}>

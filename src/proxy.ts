@@ -16,7 +16,9 @@ export async function proxy(req: NextRequest) {
   const isPublic =
     pathname.startsWith("/_next") ||
     pathname.startsWith("/avatars") ||
+    pathname.startsWith("/public") ||
     pathname === "/favicon.ico" ||
+    pathname === "/logo.png" ||      // ← add this
     pathname === "/api/auth/login";
 
   if (isPublic || isAdminLogin || isUserLogin) {

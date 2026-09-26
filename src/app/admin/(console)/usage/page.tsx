@@ -15,6 +15,37 @@ const NAVY   = "#0a1628";
 const ACCENT = "#3cc7ff";
 const GRID   = "rgba(10,22,40,0.07)";
 
+const ANIM_STYLES = `
+  @keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.85); }
+    70% { opacity: 1; transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .page-in { animation: pageFadeIn 0.4s ease both; }
+  .rise-in { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .pop-in { animation: popIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .row-in { animation: rowIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .card-hover { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(10,22,40,0.10); }
+  .btn-anim { transition: transform 0.15s ease, opacity 0.15s ease; }
+  .btn-anim:hover { transform: translateY(-2px); }
+  .btn-anim:active { transform: translateY(0px) scale(0.97); }
+  .row-hover { transition: background-color 0.15s ease, transform 0.15s ease; }
+  .row-hover:hover { background-color: #fafbfc; transform: translateX(2px); }
+`;
+
 type Usage = {
   total: number;
   byType: Record<string, { cost: number; count: number; tokens: number; characters: number }>;
@@ -50,10 +81,11 @@ export default function UsagePage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28,
+    <div className="page-in" style={{ display: "flex", flexDirection: "column", gap: 28,
       fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <style>{ANIM_STYLES}</style>
 
-      <header>
+      <header className="rise-in" style={{ animationDelay: "0ms" }}>
         <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase",
           color: ACCENT, margin: 0 }}>OpenAI</p>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: NAVY, margin: "4px 0 0" }}>
@@ -64,9 +96,8 @@ export default function UsagePage() {
         </p>
       </header>
 
-      {/* Total + line chart */}
-      <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", padding: "24px" }}>
+      <div className="rise-in card-hover" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "24px", animationDelay: "60ms" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: "#fdf6b2",
             color: "#8e4b10", display: "grid", placeItems: "center", flexShrink: 0 }}>
@@ -96,13 +127,19 @@ export default function UsagePage() {
         </div>
       </div>
 
-      {/* By type cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 14 }}>
-        {Object.entries(data.byType).map(([type, v]) => {
+        {Object.entries(data.byType).map(([type, v], i) => {
           const style = TYPE_ICONS[type] ?? TYPE_ICONS.default;
           return (
-            <div key={type} style={{ backgroundColor: "#ffffff", borderRadius: 10,
-              border: "1.5px solid #e2e8f0", padding: "16px 18px" }}>
+            <div
+              key={type}
+              className="pop-in card-hover"
+              style={{
+                backgroundColor: "#ffffff", borderRadius: 10,
+                border: "1.5px solid #e2e8f0", padding: "16px 18px",
+                animationDelay: `${100 + i * 50}ms`,
+              }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 7, backgroundColor: style.bg,
                   color: style.color, display: "grid", placeItems: "center" }}>
@@ -118,9 +155,8 @@ export default function UsagePage() {
         })}
       </div>
 
-      {/* Recent log */}
-      <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", overflow: "hidden" }}>
+      <div className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", overflow: "hidden", animationDelay: "200ms" }}>
         <div style={{ padding: "14px 20px", borderBottom: "1.5px solid #e2e8f0", backgroundColor: "#f7f9fc" }}>
           <p style={{ margin: 0, fontWeight: 700, fontSize: "0.85rem", color: NAVY }}>Recent usage</p>
         </div>
@@ -131,11 +167,16 @@ export default function UsagePage() {
         ) : data.recent.map((r, i) => {
           const style = TYPE_ICONS[r.type] ?? TYPE_ICONS.default;
           return (
-            <div key={r.id} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "12px 20px", fontSize: "0.875rem",
-              borderBottom: i < data.recent.length - 1 ? "1px solid #f0f3f8" : "none",
-            }}>
+            <div
+              key={r.id}
+              className="row-in row-hover"
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "12px 20px", fontSize: "0.875rem",
+                borderBottom: i < data.recent.length - 1 ? "1px solid #f0f3f8" : "none",
+                animationDelay: `${240 + i * 40}ms`,
+              }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 6, backgroundColor: style.bg,
                   color: style.color, display: "grid", placeItems: "center", flexShrink: 0 }}>

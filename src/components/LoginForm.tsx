@@ -36,8 +36,8 @@ export function LoginForm({
 
   const btnBg =
     accent === "amber"
-      ? { backgroundColor: "#ffffff", color: NAVY,      border: `2px solid ${NAVY}`, boxShadow: `4px 4px 0px ${NAVY}` }
-      : { backgroundColor: NAVY,      color: "#ffffff",  border: `2px solid ${NAVY}`, boxShadow: "4px 4px 0px #000000" };
+      ? { backgroundColor: "#ffffff", color: NAVY, border: `1.5px solid ${NAVY}` }
+      : { backgroundColor: NAVY,      color: "#ffffff", border: `1.5px solid ${NAVY}` };
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 8,
@@ -110,24 +110,25 @@ export function LoginForm({
           disabled={busy}
           style={{
             ...btnBg,
-            width: "100%", padding: "13px", borderRadius: 8,
-            fontSize: "0.95rem", fontWeight: 700,
+            width: "100%",
+            padding: "13px",
+            borderRadius: 8,
+            fontSize: "0.95rem",
+            fontWeight: 600,
             cursor: busy ? "not-allowed" : "pointer",
-            opacity: busy ? 0.6 : 1, letterSpacing: "0.03em",
-            marginTop: 4, transition: "opacity 0.2s, transform 0.1s, box-shadow 0.1s",
+            opacity: busy ? 0.6 : 1,
+            letterSpacing: "0.02em",
+            marginTop: 4,
+            transition: "opacity 0.2s, background-color 0.15s",
           }}
           onMouseEnter={(e) => {
-            if (!busy) {
-              const el = e.target as HTMLButtonElement;
-              el.style.transform = "translate(2px, 2px)";
-              el.style.boxShadow = "2px 2px 0px " + (accent === "amber" ? NAVY : "#000000");
+            if (!busy && accent !== "amber") {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1648b0";
             }
           }}
           onMouseLeave={(e) => {
-            if (!busy) {
-              const el = e.target as HTMLButtonElement;
-              el.style.transform = "translate(0, 0)";
-              el.style.boxShadow = "4px 4px 0px " + (accent === "amber" ? NAVY : "#000000");
+            if (!busy && accent !== "amber") {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = NAVY;
             }
           }}
         >

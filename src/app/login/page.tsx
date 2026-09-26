@@ -14,8 +14,11 @@ export default function LoginPage() {
       >
         {/* Logo + brand */}
         <div className="flex items-center gap-4">
-          <img src="/logo.png" alt="Company logo"
-            style={{ width: 52, height: 52, objectFit: "contain" }} />
+          <img
+            src="/logo.png"
+            alt="Logo"
+            style={{ width: 52, height: 52, objectFit: "contain", display: "block" }}
+          />  
           <span style={{ color: NAVY, fontSize: "1.05rem", fontWeight: 700,
             letterSpacing: "0.22em", textTransform: "uppercase" }}>
             Voice Agent

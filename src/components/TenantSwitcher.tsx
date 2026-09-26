@@ -12,6 +12,8 @@ type Tenant = {
   description: string;
 };
 
+const ACCENT = "#1e56cc";
+
 /* Different color per card index */
 const ICON_COLORS = [
   { bg: "#e8f0fe", color: "#1a56db" },
@@ -21,6 +23,28 @@ const ICON_COLORS = [
   { bg: "#edebfe", color: "#6c2bd9" },
   { bg: "#feecdc", color: "#b43403" },
 ];
+
+const ANIM_STYLES = `
+  @keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes cardIn {
+    0% { opacity: 0; transform: translateY(14px) scale(0.96); }
+    70% { opacity: 1; }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .page-in { animation: pageFadeIn 0.4s ease both; }
+  .rise-in { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .card-in { animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .tenant-card { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+  .tenant-card:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(10,22,40,0.10); }
+  .tenant-card:active { transform: translateY(-1px) scale(0.99); }
+`;
 
 export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -61,14 +85,15 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <div
-        className="bg-white p-3 mb-1 border border-gray-200"
+        className="bg-white p-3 mb-1 border border-gray-200 rise-in"
         style={{ borderRadius: 10 }}
       >
+        <style>{ANIM_STYLES}</style>
         <p className="text-[10px] tracking-[0.16em] uppercase text-gray-500 mb-2">
           Active tenant
         </p>
         <select
-          className="w-full text-sm !bg-white !text-gray-900 border border-gray-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-400"
+          className="w-full text-sm !bg-white !text-gray-900 border border-gray-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1e56cc]/40"
           style={{ borderRadius: 8 }}
           value={activeId}
           disabled={busy || tenants.length === 0}
@@ -91,8 +116,10 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="space-y-6">
-      <header>
+    <div className="page-in space-y-6">
+      <style>{ANIM_STYLES}</style>
+
+      <header className="rise-in" style={{ animationDelay: "0ms" }}>
         <p className="text-xs tracking-[0.2em] uppercase text-[var(--accent)]">
           Multi-tenant
         </p>
@@ -116,12 +143,13 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
               type="button"
               disabled={busy}
               onClick={() => select(t.id)}
-              className={`text-left bg-white p-5 border transition shadow-sm ${
-                selected
-                  ? "border-slate-900 ring-2 ring-slate-900/20"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-              style={{ borderRadius: 10 }}
+              className="text-left bg-white p-5 border shadow-sm card-in tenant-card"
+              style={{
+                borderRadius: 10,
+                animationDelay: `${60 + i * 60}ms`,
+                borderColor: selected ? ACCENT : "#e5e7eb",
+                boxShadow: selected ? `0 0 0 2px rgba(30,86,204,0.18)` : undefined,
+              }}
             >
               <div className="flex items-start gap-3">
                 <div

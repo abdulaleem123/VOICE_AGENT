@@ -49,6 +49,17 @@ const empty: Agent = {
 const inputClass =
   "!bg-white !border !border-gray-200 !text-gray-900 rounded-[10px] px-3 py-2.5 w-full focus:outline-none focus:ring-2 focus:ring-[#1e56cc]/40";
 
+// Single accent color used everywhere now
+const ACCENT = "#1e56cc";
+
+const primaryBtnClass =
+  "px-5 py-2.5 rounded-[10px] font-semibold text-sm text-white bg-[#1e56cc] hover:bg-[#1a49ac] disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200";
+
+const chipBtnActive =
+  "px-4 py-2 rounded-[10px] bg-[#1e56cc] text-white transition-colors duration-200";
+const chipBtnInactive =
+  "px-4 py-2 rounded-[10px] bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200";
+
 export default function AgentPage() {
   const [agent, setAgent] = useState<Agent>(empty);
   const [titleInput, setTitleInput] = useState("");
@@ -82,7 +93,17 @@ export default function AgentPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <header className="flex items-end justify-between gap-4">
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .anim-section {
+          animation: fadeSlideUp 0.5s ease both;
+        }
+      `}</style>
+
+      <header className="flex items-end justify-between gap-4 anim-section" style={{ animationDelay: "0ms" }}>
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-[var(--accent)]">
             Your agent
@@ -95,32 +116,7 @@ export default function AgentPage() {
             all yours.
           </p>
         </div>
-        <button
-          onClick={save}
-          disabled={busy}
-          style={{
-            padding: "10px 22px", borderRadius: 8,
-            border: "2px solid #0a1628", backgroundColor: "#1e56cc",
-            color: "#000000", fontWeight: 700, fontSize: "0.9rem",
-            cursor: busy ? "not-allowed" : "pointer",
-            opacity: busy ? 0.6 : 1,
-            boxShadow: busy ? "none" : "3px 3px 0px #000000",
-            transition: "opacity 0.2s, box-shadow 0.1s",
-            whiteSpace: "nowrap",
-          }}
-          onMouseEnter={(e) => {
-            if (!busy) {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translate(2px, 2px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "1px 1px 0px #000000";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!busy) {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translate(0, 0)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "3px 3px 0px #000000";
-            }
-          }}
-        >
+        <button onClick={save} disabled={busy} className={primaryBtnClass}>
           {busy ? "Saving…" : "Save agent"}
         </button>
       </header>
@@ -128,7 +124,10 @@ export default function AgentPage() {
       {saved ? <p className="text-sm text-[var(--accent)]">{saved}</p> : null}
 
       {/* Basic info */}
-      <section className="bg-white rounded-[10px] p-6 grid md:grid-cols-2 gap-5 shadow-sm border border-gray-100">
+      <section
+        className="bg-white rounded-[10px] p-6 grid md:grid-cols-2 gap-5 shadow-sm border border-gray-100 anim-section"
+        style={{ animationDelay: "60ms" }}
+      >
         <div>
           <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
             Agent name
@@ -179,7 +178,10 @@ export default function AgentPage() {
       </section>
 
       {/* Target titles */}
-      <section className="bg-white rounded-[10px] p-6 space-y-4 shadow-sm border border-gray-100">
+      <section
+        className="bg-white rounded-[10px] p-6 space-y-4 shadow-sm border border-gray-100 anim-section"
+        style={{ animationDelay: "120ms" }}
+      >
         <div>
           <h2 className="text-lg font-medium text-gray-900">
             Target titles / personas
@@ -196,7 +198,7 @@ export default function AgentPage() {
               onClick={() =>
                 setAgent({ ...agent, targetTitles: agent.targetTitles.filter((x) => x !== t) })
               }
-              className="px-3 py-1.5 rounded-full bg-gray-100 text-sm text-gray-800 hover:bg-gray-200"
+              className="px-3 py-1.5 rounded-full bg-gray-100 text-sm text-gray-800 hover:bg-gray-200 transition-colors duration-200"
             >
               {t} ×
             </button>
@@ -213,7 +215,7 @@ export default function AgentPage() {
           <button
             type="button"
             onClick={addTitle}
-            className="px-4 rounded-[10px] border border-gray-200 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+            className="px-4 rounded-[10px] bg-[#1e56cc] text-white hover:bg-[#1a49ac] whitespace-nowrap transition-colors duration-200"
           >
             Add
           </button>
@@ -221,7 +223,10 @@ export default function AgentPage() {
       </section>
 
       {/* Qualification asks */}
-      <section className="bg-white rounded-[10px] p-6 space-y-5 shadow-sm border border-gray-100">
+      <section
+        className="bg-white rounded-[10px] p-6 space-y-5 shadow-sm border border-gray-100 anim-section"
+        style={{ animationDelay: "180ms" }}
+      >
         <div>
           <h2 className="text-lg font-medium text-gray-900">Qualification asks</h2>
           <p className="text-sm text-gray-500">
@@ -235,17 +240,12 @@ export default function AgentPage() {
               key={n}
               type="button"
               onClick={() => setAgent({ ...agent, qualificationRounds: n })}
-              className={`px-4 py-2 rounded-[10px] ${
-                agent.qualificationRounds === n
-                  ? "bg-[#1e56cc] text-[#06211c]"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={agent.qualificationRounds === n ? chipBtnActive : chipBtnInactive}
             >
               Ask {n}×
             </button>
           ))}
         </div>
-        {/* ── ONLY CHANGE: flex items-center + min-w-0 to fix alignment ── */}
         <div className="grid sm:grid-cols-2 gap-y-3 gap-x-8">
           {[
             ["collectName", "Collect name"],
@@ -274,7 +274,10 @@ export default function AgentPage() {
       </section>
 
       {/* Voice quality */}
-      <section className="bg-white rounded-[10px] p-6 space-y-4 shadow-sm border border-gray-100">
+      <section
+        className="bg-white rounded-[10px] p-6 space-y-4 shadow-sm border border-gray-100 anim-section"
+        style={{ animationDelay: "240ms" }}
+      >
         <div>
           <h2 className="text-lg font-medium text-gray-900">
             Voice quality & desktop latency
@@ -284,7 +287,6 @@ export default function AgentPage() {
             chat and the LiveKit desktop worker.
           </p>
         </div>
-        {/* ── ONLY CHANGE: same checkbox fix ── */}
         <div className="grid sm:grid-cols-2 gap-y-3 gap-x-8">
           {(
             [
@@ -330,7 +332,10 @@ export default function AgentPage() {
       </section>
 
       {/* Voice picker */}
-      <section className="bg-white rounded-[10px] p-6 shadow-sm border border-gray-100">
+      <section
+        className="bg-white rounded-[10px] p-6 shadow-sm border border-gray-100 anim-section"
+        style={{ animationDelay: "300ms" }}
+      >
         <h2 className="text-lg font-medium mb-1 text-gray-900">
           OpenAI voice avatar
         </h2>

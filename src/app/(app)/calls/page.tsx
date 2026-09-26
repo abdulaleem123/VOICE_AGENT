@@ -22,9 +22,38 @@ ChartJS.register(
 );
 
 const NAVY  = "#0a1628";
-const NAVY2 = "#1a3050";
+const ACCENT = "#1e56cc";
 const SLATE = "#94a3b8";
 const GRID  = "rgba(10,22,40,0.07)";
+
+const ANIM_STYLES = `
+  @keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.85); }
+    70% { opacity: 1; transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  .page-in { animation: pageFadeIn 0.4s ease both; }
+  .rise-in { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .pop-in { animation: popIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .row-in { animation: rowIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .card-hover { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(10,22,40,0.10); }
+  .btn-anim { transition: transform 0.15s ease, opacity 0.15s ease; }
+  .btn-anim:hover { transform: translateY(-2px); }
+  .btn-anim:active { transform: translateY(0px) scale(0.97); }
+`;
 
 type CallRow = {
   id: string; direction: string; status: string; outcome: string;
@@ -41,6 +70,7 @@ const inputStyle: React.CSSProperties = {
   border: "1.5px solid #e2e8f0", backgroundColor: "#f7f9fc",
   color: NAVY, fontSize: "0.875rem", outline: "none",
   boxSizing: "border-box", fontFamily: "inherit",
+  transition: "border-color 0.15s ease",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -68,16 +98,22 @@ function useAnimatedValue(target: number, duration = 900) {
 
 /* ── Metric card with chart ── */
 function MetricCard({
-  label, value, icon, chart, iconBg, iconColor,
+  label, value, icon, chart, iconBg, iconColor, delay,
 }: {
   label: string; value: number; icon: React.ReactNode;
-  chart: React.ReactNode; iconBg: string; iconColor: string;
+  chart: React.ReactNode; iconBg: string; iconColor: string; delay: number;
 }) {
   const animated = useAnimatedValue(value);
   return (
-    <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
-      border: "1.5px solid #e2e8f0", padding: "18px 20px",
-      display: "flex", flexDirection: "column", gap: 12 }}>
+    <div
+      className="pop-in card-hover"
+      style={{
+        backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "18px 20px",
+        display: "flex", flexDirection: "column", gap: 12,
+        animationDelay: `${delay}ms`,
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <p style={{ margin: 0, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
@@ -161,7 +197,7 @@ export default function CallsPage() {
       data={{
         labels: ["Inbound", "Other"],
         datasets: [{ data: [data.inbound || 1, Math.max(1, data.outbound)],
-          backgroundColor: [NAVY, "#e2e8f0"], borderWidth: 0, hoverOffset: 3 }],
+          backgroundColor: [ACCENT, "#e2e8f0"], borderWidth: 0, hoverOffset: 3 }],
       }}
       options={{
         responsive: true, maintainAspectRatio: false, cutout: "68%",
@@ -177,7 +213,7 @@ export default function CallsPage() {
       data={{
         labels: ["Out", "In"],
         datasets: [{ data: [data.outbound, data.inbound],
-          backgroundColor: [NAVY, "#e2e8f0"], borderRadius: 4, borderSkipped: false }],
+          backgroundColor: [ACCENT, "#e2e8f0"], borderRadius: 4, borderSkipped: false }],
       }}
       options={{
         indexAxis: "y", responsive: true, maintainAspectRatio: false,
@@ -200,7 +236,7 @@ export default function CallsPage() {
           data: [0, Math.round(data.answered * 0.3), Math.round(data.answered * 0.5),
                  Math.round(data.answered * 0.6), Math.round(data.answered * 0.75),
                  Math.round(data.answered * 0.9), data.answered],
-          borderColor: NAVY, backgroundColor: "rgba(10,22,40,0.08)",
+          borderColor: ACCENT, backgroundColor: "rgba(30,86,204,0.10)",
           fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2,
         }],
       }}
@@ -220,7 +256,7 @@ export default function CallsPage() {
         labels: ["Missed", "Failed", "Answered"],
         datasets: [{
           data: [data.missed || 1, data.failed || 1, data.answered || 1],
-          backgroundColor: ["rgba(10,22,40,0.75)", "rgba(10,22,40,0.35)", "#e2e8f0"],
+          backgroundColor: ["rgba(30,86,204,0.75)", "rgba(30,86,204,0.35)", "#e2e8f0"],
           borderWidth: 0,
         }],
       }}
@@ -234,13 +270,14 @@ export default function CallsPage() {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28,
+    <div className="page-in" style={{ display: "flex", flexDirection: "column", gap: 28,
       fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <style>{ANIM_STYLES}</style>
 
       {/* Header */}
-      <header>
+      <header className="rise-in" style={{ animationDelay: "0ms" }}>
         <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase",
-          color: "#1e56cc", margin: 0 }}>Telephony</p>
+          color: ACCENT, margin: 0 }}>Telephony</p>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: NAVY, margin: "4px 0 0" }}>
           Inbound & outbound
         </h1>
@@ -255,38 +292,38 @@ export default function CallsPage() {
           <MetricCard label="Inbound" value={data.inbound}
             icon={<PhoneIncoming size={18} />}
             iconBg="#e8f0fe" iconColor="#1a56db"
-            chart={inboundChart} />
+            chart={inboundChart} delay={60} />
         </div>
         <div style={{ minWidth: 0 }}>
           <MetricCard label="Outbound" value={data.outbound}
             icon={<Phone size={18} />}
             iconBg="#e3fcef" iconColor="#057a55"
-            chart={outboundChart} />
+            chart={outboundChart} delay={120} />
         </div>
         <div style={{ minWidth: 0 }}>
           <MetricCard label="Picked up" value={data.answered}
             icon={<Phone size={18} />}
             iconBg="#edebfe" iconColor="#6c2bd9"
-            chart={pickedUpChart} />
+            chart={pickedUpChart} delay={180} />
         </div>
         <div style={{ minWidth: 0 }}>
           <MetricCard label="Not picked up" value={data.missed}
             icon={<PhoneMissed size={18} />}
             iconBg="#fce8f3" iconColor="#bf125d"
-            chart={missedChart} />
+            chart={missedChart} delay={240} />
         </div>
       </section>
 
       {/* Pickup rate bar */}
-      <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
+      <div className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
         border: "1.5px solid #e2e8f0", padding: "14px 20px",
-        display: "flex", alignItems: "center", gap: 16 }}>
+        display: "flex", alignItems: "center", gap: 16, animationDelay: "260ms" }}>
         <p style={{ margin: 0, fontWeight: 700, fontSize: "0.875rem", color: NAVY, whiteSpace: "nowrap" }}>
           Pickup rate
         </p>
         <div style={{ flex: 1, height: 8, borderRadius: 99, backgroundColor: "#f0f3f8", overflow: "hidden" }}>
-          <div style={{ height: "100%", borderRadius: 99, backgroundColor: NAVY,
-            width: `${data.pickupRate}%`, transition: "width 0.9s ease" }} />
+          <div style={{ height: "100%", borderRadius: 99, backgroundColor: ACCENT,
+            width: `${data.pickupRate}%`, transition: "width 1s cubic-bezier(0.22, 1, 0.36, 1)" }} />
         </div>
         <p style={{ margin: 0, fontWeight: 800, fontSize: "1rem", color: NAVY, whiteSpace: "nowrap" }}>
           {data.pickupRate}%
@@ -294,8 +331,8 @@ export default function CallsPage() {
       </div>
 
       {/* Log call form */}
-      <form onSubmit={logCall} style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", padding: "20px 24px" }}>
+      <form onSubmit={logCall} className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "20px 24px", animationDelay: "320ms" }}>
         <p style={{ margin: "0 0 16px", fontWeight: 700, fontSize: "0.9rem", color: NAVY }}>
           Log a call manually
         </p>
@@ -328,19 +365,19 @@ export default function CallsPage() {
               onChange={(e) => setPhone(e.target.value)} placeholder="+15551234567" />
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="submit" disabled={busy} style={{
-              flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${NAVY}`,
-              backgroundColor: NAVY, color: "#ffffff", fontWeight: 700,
+            <button type="submit" disabled={busy} className="btn-anim" style={{
+              flex: 1, padding: "9px 0", borderRadius: 8, border: `1.5px solid ${ACCENT}`,
+              backgroundColor: ACCENT, color: "#ffffff", fontWeight: 700,
               fontSize: "0.82rem", cursor: busy ? "not-allowed" : "pointer",
-              boxShadow: "3px 3px 0px #000000", opacity: busy ? 0.6 : 1,
+              opacity: busy ? 0.6 : 1,
             }}>
               Log
             </button>
-            <button type="button" disabled={busy || !phone} onClick={queueOutbound} style={{
-              flex: 1, padding: "9px 0", borderRadius: 8, border: `2px solid ${NAVY}`,
-              backgroundColor: "#ffffff", color: NAVY, fontWeight: 700,
+            <button type="button" disabled={busy || !phone} onClick={queueOutbound} className="btn-anim" style={{
+              flex: 1, padding: "9px 0", borderRadius: 8, border: `1.5px solid ${ACCENT}`,
+              backgroundColor: "#ffffff", color: ACCENT, fontWeight: 700,
               fontSize: "0.82rem", cursor: busy || !phone ? "not-allowed" : "pointer",
-              boxShadow: "3px 3px 0px #000000", opacity: busy || !phone ? 0.4 : 1,
+              opacity: busy || !phone ? 0.4 : 1,
             }}>
               Dial
             </button>
@@ -348,11 +385,11 @@ export default function CallsPage() {
         </div>
       </form>
 
-      {msg && <p style={{ fontSize: "0.875rem", color: NAVY, fontWeight: 600, margin: 0 }}>✓ {msg}</p>}
+      {msg && <p className="row-in" style={{ fontSize: "0.875rem", color: ACCENT, fontWeight: 600, margin: 0 }}>✓ {msg}</p>}
 
       {/* Call log table */}
-      <div style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", overflow: "hidden" }}>
+      <div className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", overflow: "hidden", animationDelay: "380ms" }}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
             <thead>
@@ -370,7 +407,14 @@ export default function CallsPage() {
               {data.logs.map((l, i) => {
                 const oc = OUTCOME_COLORS[l.outcome] ?? OUTCOME_COLORS.failed;
                 return (
-                  <tr key={l.id} style={{ borderBottom: i < data.logs.length - 1 ? "1px solid #f0f3f8" : "none" }}>
+                  <tr
+                    key={l.id}
+                    className="row-in"
+                    style={{
+                      borderBottom: i < data.logs.length - 1 ? "1px solid #f0f3f8" : "none",
+                      animationDelay: `${i * 40}ms`,
+                    }}
+                  >
                     <td style={{ padding: "11px 16px", color: "#6b7fa0", fontSize: "0.78rem", whiteSpace: "nowrap" }}>
                       {new Date(l.createdAt).toLocaleString()}
                     </td>

@@ -18,8 +18,8 @@ export default function AdminLoginPage() {
         <div className="flex items-center gap-4">
           <img
             src="/logo.png"
-            alt="Company logo"
-            style={{ width: 52, height: 52, objectFit: "contain" }}
+            alt="Logo"
+            style={{ width: 52, height: 52, objectFit: "contain", display: "block" }}
           />
           <span
             style={{

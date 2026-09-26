@@ -13,17 +13,23 @@ import { TenantSwitcher } from "@/components/TenantSwitcher";
 const NAVY = "#1e56cc";
 
 const links = [
-  { href: "/dashboard",     label: "Overview",     icon: LayoutDashboard },
-  { href: "/tenants",       label: "Tenants",      icon: Building2       },
-  { href: "/agent",         label: "Agent",        icon: Sparkles        },
-  { href: "/knowledge",     label: "Knowledge",    icon: BookOpen        },
-  { href: "/conversations", label: "Conversation", icon: MessageSquare   },
-  { href: "/calls",         label: "Calls",        icon: PhoneCall       },
-  { href: "/leads",         label: "Leads",        icon: Users           },
-  { href: "/handoff",       label: "Handoff",      icon: Handshake       },
-  { href: "/meetings",      label: "Meeting",      icon: Calendar        },
-  { href: "/integrations",  label: "Integrations", icon: Plug            },
-  { href: "/settings",      label: "Settings",     icon: Settings        },
+  { href: "/dashboard",     label: "Overview",     icon: LayoutDashboard, group: "main"  },
+  { href: "/tenants",       label: "Tenants",      icon: Building2,       group: "main"  },
+  { href: "/agent",         label: "Agent",        icon: Sparkles,        group: "main"  },
+  { href: "/knowledge",     label: "Knowledge",    icon: BookOpen,        group: "main"  },
+  { href: "/conversations", label: "Conversation", icon: MessageSquare,   group: "comms" },
+  { href: "/calls",         label: "Calls",        icon: PhoneCall,       group: "comms" },
+  { href: "/leads",         label: "Leads",        icon: Users,           group: "comms" },
+  { href: "/handoff",       label: "Handoff",      icon: Handshake,       group: "comms" },
+  { href: "/meetings",      label: "Meeting",      icon: Calendar,        group: "comms" },
+  { href: "/integrations",  label: "Integrations", icon: Plug,            group: "sys"   },
+  { href: "/settings",      label: "Settings",     icon: Settings,        group: "sys"   },
+];
+
+const groups = [
+  { key: "main",  label: "Workspace" },
+  { key: "comms", label: "Comms"     },
+  { key: "sys",   label: "System"    },
 ];
 
 export function Sidebar({ name }: { name: string }) {
@@ -39,202 +45,293 @@ export function Sidebar({ name }: { name: string }) {
 
   return (
     <aside style={{
-      width: collapsed ? 64 : 240, minWidth: collapsed ? 64 : 240,
-      height: "100vh", position: "sticky", top: 0,
-      backgroundColor: "#ffffff", display: "flex", flexDirection: "column",
-      transition: "width 0.22s ease, min-width 0.22s ease",
-      overflow: "hidden", borderRight: "1.5px solid #e2e8f0",
+      width: collapsed ? 68 : 248,
+      minWidth: collapsed ? 68 : 248,
+      height: "100vh",
+      position: "sticky",
+      top: 0,
+      backgroundColor: "#f8faff",
+      display: "flex",
+      flexDirection: "column",
+      transition: "width 0.2s ease, min-width 0.2s ease",
+      overflow: "hidden",
+      borderRight: "1px solid #e4eaf6",
       fontFamily: "'Segoe UI', system-ui, sans-serif",
-      ["--bg"    as string]: "#ffffff",
-      ["--bg-2"  as string]: "#ffffff",
+      ["--bg"    as string]: "#f8faff",
       ["--card"  as string]: "#ffffff",
-      ["--line"  as string]: "#e2e8f0",
+      ["--line"  as string]: "#e4eaf6",
       ["--text"  as string]: NAVY,
       ["--muted" as string]: "#6b7fa0",
       ["--accent"as string]: NAVY,
     }}>
 
-      {/* ── Logo row — logo always stays here ── */}
+      {/* ── Header ── */}
       <div style={{
-        height: 64, flexShrink: 0,
+        height: 60, flexShrink: 0,
         display: "flex", alignItems: "center",
-        padding: "0 12px",
-        borderBottom: "1.5px solid #e2e8f0",
+        padding: "0 14px",
+        borderBottom: "1px solid #e4eaf6",
+        backgroundColor: "#ffffff",
         justifyContent: collapsed ? "center" : "space-between",
       }}>
-        {/* Brand / Logo — always visible */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 10,
-          overflow: "hidden", flex: collapsed ? "none" : 1, minWidth: 0,
-        }}>
-          <img
-            src="/logo.png"
-            alt="Logo"
-            style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }}
-          />
-          {!collapsed && (
-            <div style={{ overflow: "hidden" }}>
-              <p style={{ color: NAVY, fontWeight: 700, fontSize: "0.88rem", whiteSpace: "nowrap", margin: 0 }}>
-                Voice Agent
-              </p>
-              <p style={{ color: "#6b7fa0", fontSize: "0.68rem", margin: 0 }}>Multi-tenant</p>
-            </div>
-          )}
-        </div>
+        {/* Logo — plain, no border, no box */}
+        <img
+          src="/logo.png"
+          alt="Logo"
+          style={{
+            width: 34, height: 34,
+            objectFit: "contain",
+            flexShrink: 0,
+            display: "block",
+          }}
+        />
 
-        {/* Chevron only when expanded (on the logo row) */}
+        {/* Brand text */}
+        {!collapsed && (
+          <div style={{ flex: 1, minWidth: 0, overflow: "hidden", marginLeft: 10 }}>
+            <p style={{ color: NAVY, fontWeight: 700, fontSize: "0.85rem",
+              margin: 0, whiteSpace: "nowrap", overflow: "hidden",
+              textOverflow: "ellipsis" }}>
+              Voice Agent
+            </p>
+            <p style={{ color: "#94a3b8", fontSize: "0.65rem", margin: 0 }}>
+              Multi-tenant
+            </p>
+          </div>
+        )}
+
+        {/* Collapse button — only when expanded */}
         {!collapsed && (
           <button
             onClick={() => setCollapsed(true)}
             style={{
-              width: 28, height: 28,
-              background: "#f0f3fa", border: "1.5px solid #e2e8f0", borderRadius: 6,
-              color: "#6b7fa0", cursor: "pointer",
-              display: "grid", placeItems: "center", flexShrink: 0,
+              width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+              background: "#f0f4ff", border: "1px solid #e4eaf6",
+              color: "#94a3b8", cursor: "pointer",
+              display: "grid", placeItems: "center", marginLeft: 6,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#e4ecff";
+              (e.currentTarget as HTMLButtonElement).style.color = NAVY;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f0f4ff";
+              (e.currentTarget as HTMLButtonElement).style.color = "#94a3b8";
             }}
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={13} />
           </button>
         )}
       </div>
 
       {/* ── Tenant switcher ── */}
       {!collapsed && (
-        <div style={{ padding: "10px 12px 0" }}>
+        <div style={{
+          padding: "10px 12px",
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #e4eaf6",
+        }}>
           <TenantSwitcher compact />
         </div>
       )}
 
-      {/* ── Nav links ── */}
+      {/* ── Nav ── */}
       <nav style={{
-        flex: 1, padding: "10px 8px",
-        display: "flex", flexDirection: "column", gap: 2, overflowY: "auto",
+        flex: 1, overflowY: "auto",
+        padding: "10px 8px",
+        display: "flex", flexDirection: "column", gap: 0,
       }}>
-        {/* Chevron on the NEXT LINE when collapsed (before page icons) */}
+
+        {/* Expand button — only when collapsed, cleanly at top of nav */}
         {collapsed && (
           <button
             onClick={() => setCollapsed(false)}
             title="Expand sidebar"
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
-              width: "100%", height: 36, marginBottom: 4,
-              background: "#f0f3fa", border: "1.5px solid #e2e8f0", borderRadius: 8,
-              color: "#6b7fa0", cursor: "pointer",
+              width: "100%", height: 30, borderRadius: 7,
+              marginBottom: 8,
+              background: "#f0f4ff", border: "1px solid #e4eaf6",
+              color: "#94a3b8", cursor: "pointer",
+              display: "grid", placeItems: "center", flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#e4ecff";
+              (e.currentTarget as HTMLButtonElement).style.color = NAVY;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f0f4ff";
+              (e.currentTarget as HTMLButtonElement).style.color = "#94a3b8";
             }}
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button>
         )}
 
-        {links.map((l) => {
-          const active = path === l.href || path.startsWith(l.href + "/");
-          const Icon   = l.icon;
+        {groups.map((g, gi) => {
+          const groupLinks = links.filter(l => l.group === g.key);
           return (
-            <Link
-              key={l.href}
-              href={l.href}
-              title={collapsed ? l.label : undefined}
-              style={{
-                display: "flex", alignItems: "center",
-                justifyContent: collapsed ? "center" : "flex-start",
-                gap: collapsed ? 0 : 10,
-                padding: collapsed ? "10px 0" : "9px 12px",
-                borderRadius: 8, textDecoration: "none",
-                fontSize: "0.855rem", fontWeight: active ? 600 : 400,
-                color: active ? "#ffffff" : "#4a6080",
-                backgroundColor: active ? NAVY : "transparent",
-                borderLeft: active && !collapsed ? `3px solid ${NAVY}` : "3px solid transparent",
-                transition: "background 0.15s, color 0.15s", whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                if (!active) {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#eef2fb";
-                  (e.currentTarget as HTMLAnchorElement).style.color = NAVY;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!active) {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "transparent";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#4a6080";
-                }
-              }}
-            >
-              <Icon size={17} style={{ flexShrink: 0 }} />
-              {!collapsed && l.label}
-            </Link>
+            <div key={g.key} style={{ marginBottom: gi < groups.length - 1 ? 14 : 0 }}>
+
+              {/* Group label */}
+              {!collapsed && (
+                <p style={{
+                  margin: "0 0 3px 10px",
+                  fontSize: "0.61rem", fontWeight: 700,
+                  textTransform: "uppercase", letterSpacing: "0.08em",
+                  color: "#b0bdd0",
+                }}>
+                  {g.label}
+                </p>
+              )}
+
+              {/* Divider between groups when collapsed */}
+              {collapsed && gi > 0 && (
+                <div style={{
+                  height: 1, backgroundColor: "#e4eaf6",
+                  margin: "6px 8px 8px",
+                }} />
+              )}
+
+              {groupLinks.map((l) => {
+                const active = path === l.href || path.startsWith(l.href + "/");
+                const Icon   = l.icon;
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    title={collapsed ? l.label : undefined}
+                    style={{
+                      display: "flex", alignItems: "center",
+                      justifyContent: collapsed ? "center" : "flex-start",
+                      gap: 9,
+                      padding: collapsed ? "9px 0" : "8px 10px",
+                      borderRadius: 8, textDecoration: "none",
+                      fontSize: "0.84rem",
+                      fontWeight: active ? 600 : 400,
+                      color: active ? NAVY : "#64748b",
+                      backgroundColor: active ? "#e8efff" : "transparent",
+                      marginBottom: 1,
+                      position: "relative",
+                      transition: "background 0.12s, color 0.12s",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!active) {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#f0f4ff";
+                        (e.currentTarget as HTMLAnchorElement).style.color = NAVY;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active) {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "transparent";
+                        (e.currentTarget as HTMLAnchorElement).style.color = "#64748b";
+                      }
+                    }}
+                  >
+                    {/* Active left bar */}
+                    {active && !collapsed && (
+                      <span style={{
+                        position: "absolute", left: 0,
+                        top: "20%", bottom: "20%",
+                        width: 3, borderRadius: "0 3px 3px 0",
+                        backgroundColor: NAVY,
+                      }} />
+                    )}
+                    <Icon
+                      size={16}
+                      style={{
+                        flexShrink: 0,
+                        color: active ? NAVY : "#94a3b8",
+                      }}
+                    />
+                    {!collapsed && l.label}
+                  </Link>
+                );
+              })}
+            </div>
           );
         })}
       </nav>
 
-      {/* ── User footer ── */}
-      <div style={{ borderTop: "1.5px solid #e2e8f0", padding: "12px 8px" }}>
+      {/* ── Footer ── */}
+      <div style={{
+        borderTop: "1px solid #e4eaf6",
+        padding: "10px 8px",
+        backgroundColor: "#ffffff",
+      }}>
         {collapsed ? (
+          /* Collapsed — logout icon only */
           <div style={{ display: "flex", justifyContent: "center" }}>
             <button
               onClick={logout}
               title="Sign out"
               style={{
                 width: 36, height: 36, borderRadius: 8,
-                backgroundColor: "#f4f7ff", border: "1.5px solid #e2e8f0",
-                color: "#6b7fa0", cursor: "pointer",
+                backgroundColor: "#f8faff", border: "1px solid #e4eaf6",
+                color: "#94a3b8", cursor: "pointer",
                 display: "grid", placeItems: "center",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "#d93025";
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#fce8f3";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#f8b4d9";
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.color = "#ef4444";
+                el.style.backgroundColor = "#fef2f2";
+                el.style.borderColor = "#fecaca";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "#6b7fa0";
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f4f7ff";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#e2e8f0";
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.color = "#94a3b8";
+                el.style.backgroundColor = "#f8faff";
+                el.style.borderColor = "#e4eaf6";
               }}
             >
               <LogOut size={15} />
             </button>
           </div>
         ) : (
+          /* Expanded — user card */
           <div style={{
-            backgroundColor: "#f4f7ff", border: "1.5px solid #e2e8f0",
-            borderRadius: 10, padding: "10px 12px",
             display: "flex", alignItems: "center",
             justifyContent: "space-between", gap: 8,
+            padding: "8px 10px", borderRadius: 10,
+            backgroundColor: "#f0f4ff", border: "1px solid #e4eaf6",
           }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 9,
               overflow: "hidden", minWidth: 0,
             }}>
               <div style={{
-                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                backgroundColor: NAVY, color: "#ffffff",
-                display: "grid", placeItems: "center",
-                fontWeight: 800, fontSize: "0.78rem",
+                width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                background: `linear-gradient(135deg, ${NAVY} 0%, #4f7ef8 100%)`,
+                color: "#ffffff", display: "grid", placeItems: "center",
+                fontWeight: 700, fontSize: "0.78rem",
               }}>
                 {name?.[0]?.toUpperCase() ?? "O"}
               </div>
-              <div style={{ overflow: "hidden", minWidth: 0 }}>
+              <div style={{ minWidth: 0, overflow: "hidden" }}>
                 <p style={{
-                  color: NAVY, fontWeight: 600, fontSize: "0.8rem",
-                  margin: 0, whiteSpace: "nowrap", overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  color: "#1e293b", fontWeight: 600, fontSize: "0.8rem",
+                  margin: 0, whiteSpace: "nowrap",
+                  overflow: "hidden", textOverflow: "ellipsis",
                 }}>
                   {name}
                 </p>
-                <p style={{ color: "#6b7fa0", fontSize: "0.66rem", margin: 0 }}>Operator</p>
+                <p style={{ color: "#94a3b8", fontSize: "0.65rem", margin: 0 }}>
+                  Operator
+                </p>
               </div>
             </div>
             <button
               onClick={logout}
               title="Sign out"
               style={{
-                background: "transparent", border: "none", color: "#6b7fa0",
-                cursor: "pointer", padding: 6, borderRadius: 6,
+                background: "transparent", border: "none",
+                color: "#94a3b8", cursor: "pointer",
+                padding: 5, borderRadius: 6,
                 display: "grid", placeItems: "center", flexShrink: 0,
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#d93025")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#6b7fa0")}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#ef4444")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#94a3b8")}
             >
-              <LogOut size={15} />
+              <LogOut size={14} />
             </button>
           </div>
         )}

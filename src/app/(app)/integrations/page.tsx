@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { CheckCircle, XCircle, Save, Radio } from "lucide-react";
 
 const NAVY = "#0a1628";
+const ACCENT = "#1e56cc";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", height: 40, padding: "0 12px", borderRadius: 8,
   border: "1.5px solid #e2e8f0", backgroundColor: "#f7f9fc",
   color: NAVY, fontSize: "0.875rem", outline: "none",
   boxSizing: "border-box", fontFamily: "inherit",
+  transition: "border-color 0.15s ease, background-color 0.15s ease",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -18,6 +20,31 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: "0.1em", marginBottom: 6,
 };
 
+const ANIM_STYLES = `
+  @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .page-in { animation: pageFadeIn 0.4s ease both; }
+  .rise-in { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .pop-in { animation: popIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .row-in { animation: rowIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .btn-anim { transition: transform 0.15s ease, opacity 0.15s ease; }
+  .btn-anim:hover { transform: translateY(-2px); }
+  .btn-anim:active { transform: translateY(0px) scale(0.97); }
+  .status-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .status-card:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(10,22,40,0.08); }
+`;
+
 function PressButton({
   onClick, filled = true, children,
 }: { onClick: () => void; filled?: boolean; children: React.ReactNode }) {
@@ -25,23 +52,14 @@ function PressButton({
     <button
       type="button"
       onClick={onClick}
+      className="btn-anim"
       style={{
         display: "inline-flex", alignItems: "center", gap: 7,
         padding: "10px 22px", borderRadius: 8,
-        border: `2px solid ${NAVY}`,
-        backgroundColor: filled ? NAVY : "#ffffff",
-        color: filled ? "#ffffff" : NAVY,
+        border: `1.5px solid ${ACCENT}`,
+        backgroundColor: filled ? ACCENT : "#ffffff",
+        color: filled ? "#ffffff" : ACCENT,
         fontWeight: 700, fontSize: "0.875rem", cursor: "pointer",
-        boxShadow: "3px 3px 0px #000000",
-        transition: "transform 0.1s, box-shadow 0.1s",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.transform = "translate(2px, 2px)";
-        (e.currentTarget as HTMLButtonElement).style.boxShadow = "1px 1px 0px #000000";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.transform = "translate(0, 0)";
-        (e.currentTarget as HTMLButtonElement).style.boxShadow = "3px 3px 0px #000000";
       }}
     >
       {children}
@@ -105,13 +123,14 @@ export default function IntegrationsPage() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28,
+    <div className="page-in" style={{ display: "flex", flexDirection: "column", gap: 28,
       fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <style>{ANIM_STYLES}</style>
 
       {/* Header */}
-      <header>
+      <header className="rise-in" style={{ animationDelay: "0ms" }}>
         <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase",
-          color: "#1e56cc", margin: 0, fontWeight: 600 }}>
+          color: ACCENT, margin: 0, fontWeight: 600 }}>
           Third-party
         </p>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: NAVY, margin: "4px 0 0" }}>
@@ -124,11 +143,12 @@ export default function IntegrationsPage() {
 
       {/* Status cards */}
       <section style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-        {statusItems.map(({ label, ok }) => (
-          <div key={label} style={{
+        {statusItems.map(({ label, ok }, i) => (
+          <div key={label} className="pop-in status-card" style={{
             display: "flex", alignItems: "center", gap: 12,
             padding: "14px 18px", borderRadius: 10,
             backgroundColor: "#ffffff", border: "1.5px solid #e2e8f0",
+            animationDelay: `${60 + i * 60}ms`,
           }}>
             <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0,
               backgroundColor: ok ? "#e3fcef" : "#fce8f3",
@@ -150,8 +170,8 @@ export default function IntegrationsPage() {
       </section>
 
       {/* Fields form */}
-      <section style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", padding: "24px" }}>
+      <section className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "24px", animationDelay: "160ms" }}>
         <p style={{ margin: "0 0 20px", fontWeight: 700, fontSize: "0.9rem", color: NAVY }}>
           Configuration
         </p>
@@ -164,7 +184,7 @@ export default function IntegrationsPage() {
                 value={form[f.key] || ""}
                 onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                 placeholder={f.hint}
-                onFocus={(e) => { e.target.style.borderColor = NAVY; e.target.style.backgroundColor = "#fff"; }}
+                onFocus={(e) => { e.target.style.borderColor = ACCENT; e.target.style.backgroundColor = "#fff"; }}
                 onBlur={(e)  => { e.target.style.borderColor = "#e2e8f0"; e.target.style.backgroundColor = "#f7f9fc"; }}
               />
             </div>
@@ -178,7 +198,7 @@ export default function IntegrationsPage() {
             style={inputStyle}
             value={dispatchApiUrl}
             onChange={(e) => setDispatchApiUrl(e.target.value)}
-            onFocus={(e) => { e.target.style.borderColor = NAVY; e.target.style.backgroundColor = "#fff"; }}
+            onFocus={(e) => { e.target.style.borderColor = ACCENT; e.target.style.backgroundColor = "#fff"; }}
             onBlur={(e)  => { e.target.style.borderColor = "#e2e8f0"; e.target.style.backgroundColor = "#f7f9fc"; }}
           />
         </div>
@@ -192,22 +212,22 @@ export default function IntegrationsPage() {
             <Radio size={15} /> Ping dispatch API
           </PressButton>
           {saved && (
-            <span style={{ fontSize: "0.875rem", color: "#057a55", fontWeight: 700 }}>
+            <span className="pop-in" style={{ fontSize: "0.875rem", color: "#057a55", fontWeight: 700 }}>
               ✓ {saved}
             </span>
           )}
         </div>
 
         {health && (
-          <p style={{ marginTop: 12, fontSize: "0.875rem", color: "#6b7fa0" }}>
+          <p className="row-in" style={{ marginTop: 12, fontSize: "0.875rem", color: "#6b7fa0" }}>
             {health}
           </p>
         )}
       </section>
 
       {/* Desktop staging */}
-      <section style={{ backgroundColor: "#ffffff", borderRadius: 10,
-        border: "1.5px solid #e2e8f0", padding: "24px" }}>
+      <section className="rise-in" style={{ backgroundColor: "#ffffff", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", padding: "24px", animationDelay: "220ms" }}>
         <p style={{ margin: "0 0 14px", fontWeight: 700, fontSize: "0.9rem", color: NAVY }}>
           Desktop staging (low latency)
         </p>
@@ -218,8 +238,8 @@ export default function IntegrationsPage() {
             "python token_server.py  →  http://localhost:3001",
             "python api.py  →  outbound dials at http://localhost:8000/docs",
           ].map((cmd, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, backgroundColor: NAVY,
+            <div key={i} className="row-in" style={{ display: "flex", alignItems: "flex-start", gap: 12, animationDelay: `${260 + i * 40}ms` }}>
+              <span style={{ width: 22, height: 22, borderRadius: 6, backgroundColor: ACCENT,
                 color: "#ffffff", display: "grid", placeItems: "center",
                 fontSize: "0.7rem", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
                 {i + 1}
